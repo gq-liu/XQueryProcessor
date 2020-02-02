@@ -1,12 +1,10 @@
-// Generated from /Users/mac126/19fall/udemy/spring/cse232bProject/src/XPathParser/XPATH.g4 by ANTLR 4.7.2
+// Generated from /Users/tianyusun/Desktop/20winter/CSE232B/CSE232WI20PROJECT/cse232bProject/src/XPathParser/XPATH.g4 by ANTLR 4.7.2
+package XPathParser.XPATHgen;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.misc.*;
 import org.antlr.v4.runtime.tree.*;
 import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class XPATHParser extends Parser {
