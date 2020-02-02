@@ -1,5 +1,5 @@
 // Generated from /Users/tianyusun/Desktop/20winter/CSE232B/CSE232WI20PROJECT/cse232bProject/src/XPathParser/XPATH.g4 by ANTLR 4.7.2
-package XPathParser.XPATHgen;
+package XPATHgen;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**

@@ -1,9 +1,16 @@
 // Generated from /Users/tianyusun/Desktop/20winter/CSE232B/CSE232WI20PROJECT/cse232bProject/src/XPathParser/XPATH.g4 by ANTLR 4.7.2
-package XPathParser.XPATHgen;
-import org.antlr.v4.runtime.atn.*;
-import org.antlr.v4.runtime.dfa.DFA;
+package XPATHgen;
+
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.*;
+import org.antlr.v4.runtime.atn.ATN;
+import org.antlr.v4.runtime.atn.ATNDeserializer;
+import org.antlr.v4.runtime.atn.ParserATNSimulator;
+import org.antlr.v4.runtime.atn.PredictionContextCache;
+import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
+import org.antlr.v4.runtime.tree.ParseTreeVisitor;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 import java.util.List;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
@@ -113,15 +120,15 @@ public class XPATHParser extends Parser {
 		public ApDoubleContext(ApContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterApDouble(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterApDouble(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitApDouble(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitApDouble(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitApDouble(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitApDouble(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -135,15 +142,15 @@ public class XPATHParser extends Parser {
 		public ApSingleContext(ApContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterApSingle(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterApSingle(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitApSingle(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitApSingle(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitApSingle(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitApSingle(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -202,15 +209,15 @@ public class XPATHParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_doc; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterDoc(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterDoc(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitDoc(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitDoc(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitDoc(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitDoc(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -255,15 +262,15 @@ public class XPATHParser extends Parser {
 		public RpSelfContext(RpContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterRpSelf(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterRpSelf(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitRpSelf(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitRpSelf(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitRpSelf(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitRpSelf(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -271,15 +278,15 @@ public class XPATHParser extends Parser {
 		public RpTextContext(RpContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterRpText(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterRpText(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitRpText(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitRpText(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitRpText(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitRpText(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -293,15 +300,15 @@ public class XPATHParser extends Parser {
 		public RpSingleSlashContext(RpContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterRpSingleSlash(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterRpSingleSlash(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitRpSingleSlash(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitRpSingleSlash(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitRpSingleSlash(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitRpSingleSlash(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -309,15 +316,15 @@ public class XPATHParser extends Parser {
 		public RpChildrenContext(RpContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterRpChildren(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterRpChildren(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitRpChildren(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitRpChildren(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitRpChildren(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitRpChildren(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -328,15 +335,15 @@ public class XPATHParser extends Parser {
 		public RpAttriContext(RpContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterRpAttri(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterRpAttri(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitRpAttri(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitRpAttri(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitRpAttri(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitRpAttri(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -347,15 +354,15 @@ public class XPATHParser extends Parser {
 		public RpTagContext(RpContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterRpTag(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterRpTag(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitRpTag(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitRpTag(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitRpTag(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitRpTag(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -363,15 +370,15 @@ public class XPATHParser extends Parser {
 		public RpParentContext(RpContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterRpParent(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterRpParent(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitRpParent(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitRpParent(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitRpParent(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitRpParent(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -382,15 +389,15 @@ public class XPATHParser extends Parser {
 		public RpParenthesesContext(RpContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterRpParentheses(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterRpParentheses(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitRpParentheses(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitRpParentheses(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitRpParentheses(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitRpParentheses(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -404,15 +411,15 @@ public class XPATHParser extends Parser {
 		public RpConditionContext(RpContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterRpCondition(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterRpCondition(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitRpCondition(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitRpCondition(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitRpCondition(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitRpCondition(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -426,15 +433,15 @@ public class XPATHParser extends Parser {
 		public RpCommaContext(RpContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterRpComma(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterRpComma(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitRpComma(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitRpComma(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitRpComma(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitRpComma(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -448,15 +455,15 @@ public class XPATHParser extends Parser {
 		public RpDoubleSlashContext(RpContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterRpDoubleSlash(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterRpDoubleSlash(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitRpDoubleSlash(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitRpDoubleSlash(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitRpDoubleSlash(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitRpDoubleSlash(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -652,19 +659,19 @@ public class XPATHParser extends Parser {
 		public RpContext rp(int i) {
 			return getRuleContext(RpContext.class,i);
 		}
-		public TerminalNode IS() { return getToken(XPATHParser.IS, 0); }
+		public TerminalNode IS() { return getToken(IS, 0); }
 		public FilterIsContext(FContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterFilterIs(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterFilterIs(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitFilterIs(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitFilterIs(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitFilterIs(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitFilterIs(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -675,15 +682,15 @@ public class XPATHParser extends Parser {
 		public FilterRpContext(FContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterFilterRp(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterFilterRp(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitFilterRp(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitFilterRp(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitFilterRp(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitFilterRp(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -694,15 +701,15 @@ public class XPATHParser extends Parser {
 		public FilterParenthesesContext(FContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterFilterParentheses(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterFilterParentheses(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitFilterParentheses(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitFilterParentheses(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitFilterParentheses(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitFilterParentheses(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -713,19 +720,19 @@ public class XPATHParser extends Parser {
 		public RpContext rp(int i) {
 			return getRuleContext(RpContext.class,i);
 		}
-		public TerminalNode EQUALS() { return getToken(XPATHParser.EQUALS, 0); }
+		public TerminalNode EQUALS() { return getToken(EQUALS, 0); }
 		public FilterEqContext(FContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterFilterEq(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterFilterEq(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitFilterEq(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitFilterEq(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitFilterEq(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitFilterEq(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -739,15 +746,15 @@ public class XPATHParser extends Parser {
 		public FilterORContext(FContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterFilterOR(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterFilterOR(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitFilterOR(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitFilterOR(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitFilterOR(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitFilterOR(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -761,15 +768,15 @@ public class XPATHParser extends Parser {
 		public FilterANDContext(FContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterFilterAND(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterFilterAND(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitFilterAND(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitFilterAND(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitFilterAND(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitFilterAND(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -780,15 +787,15 @@ public class XPATHParser extends Parser {
 		public FilterNOTContext(FContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterFilterNOT(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterFilterNOT(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitFilterNOT(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitFilterNOT(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitFilterNOT(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitFilterNOT(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -929,22 +936,22 @@ public class XPATHParser extends Parser {
 	}
 
 	public static class TagNameContext extends ParserRuleContext {
-		public TerminalNode ID() { return getToken(XPATHParser.ID, 0); }
+		public TerminalNode ID() { return getToken(ID, 0); }
 		public TagNameContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_tagName; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterTagName(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterTagName(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitTagName(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitTagName(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitTagName(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitTagName(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -971,22 +978,22 @@ public class XPATHParser extends Parser {
 	}
 
 	public static class AttNameContext extends ParserRuleContext {
-		public TerminalNode ID() { return getToken(XPATHParser.ID, 0); }
+		public TerminalNode ID() { return getToken(ID, 0); }
 		public AttNameContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_attName; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterAttName(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterAttName(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitAttName(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitAttName(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitAttName(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitAttName(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1013,22 +1020,22 @@ public class XPATHParser extends Parser {
 	}
 
 	public static class FilenameContext extends ParserRuleContext {
-		public TerminalNode FILENAME() { return getToken(XPATHParser.FILENAME, 0); }
+		public TerminalNode FILENAME() { return getToken(FILENAME, 0); }
 		public FilenameContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_filename; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).enterFilename(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).enterFilename(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof XPATHListener ) ((XPATHListener)listener).exitFilename(this);
+			if ( listener instanceof XPATHgen.XPATHListener) ((XPATHgen.XPATHListener)listener).exitFilename(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof XPATHVisitor ) return ((XPATHVisitor<? extends T>)visitor).visitFilename(this);
+			if ( visitor instanceof XPATHgen.XPATHVisitor) return ((XPATHgen.XPATHVisitor<? extends T>)visitor).visitFilename(this);
 			else return visitor.visitChildren(this);
 		}
 	}

@@ -1,3 +1,5 @@
+import XPATHgen.XPATHBaseVisitor;
+import XPATHgen.XPATHParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -9,13 +11,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.util.LinkedList;
 
-public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<LinkedList<Node>> {
+public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>> {
     //
     LinkedList<Node> context = new LinkedList<Node>();
     Document doc = null;
 
     // parse XML file to DOM and maintain in the memory
-    public LinkedList<Node> visitDoc(XPathParser.XPATHgen.XPATHParser.DocContext ctx) {
+    public LinkedList<Node> visitDoc(XPATHParser.DocContext ctx) {
 
         // create the file
         File xmlFile = new File(ctx.filename().getText());
@@ -49,7 +51,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
     }
 
     //
-    public LinkedList<Node> visitApDouble(XPathParser.XPATHgen.XPATHParser.ApDoubleContext ctx) {
+    public LinkedList<Node> visitApDouble(XPATHParser.ApDoubleContext ctx) {
         // visit the doc node to parse XML to DOM
         visit(ctx.doc());
         // get all descenders from each node in context
@@ -64,7 +66,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         return result;
     }
 
-    public LinkedList<Node> visitApSingle(XPathParser.XPATHgen.XPATHParser.ApSingleContext ctx) {
+    public LinkedList<Node> visitApSingle(XPATHParser.ApSingleContext ctx) {
         // visit the doc node to parse XML to DOM
 
         visit(ctx.doc());
@@ -72,14 +74,14 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         return result;
     }
 
-    public LinkedList<Node> visitRpSingleSlash(XPathParser.XPATHgen.XPATHParser.RpSingleSlashContext ctx) {
+    public LinkedList<Node> visitRpSingleSlash(XPATHParser.RpSingleSlashContext ctx) {
         // get the corresponding context after visit(ctx.rp(0))
         visit(ctx.rp(0));
         LinkedList<Node> result = visit(ctx.rp(1));
         return result;
     }
 
-    public LinkedList<Node> visitRpDoubleSlash(XPathParser.XPATHgen.XPATHParser.RpDoubleSlashContext ctx) {
+    public LinkedList<Node> visitRpDoubleSlash(XPATHParser.RpDoubleSlashContext ctx) {
         LinkedList<Node> result = new LinkedList<Node>();
         visit(ctx.rp(0));
         for (Node node : context) {
@@ -89,7 +91,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         return result;
     }
 
-    public LinkedList<Node> visitRpText(XPathParser.XPATHgen.XPATHParser.RpTextContext ctx) {
+    public LinkedList<Node> visitRpText(XPATHParser.RpTextContext ctx) {
         LinkedList<Node> children = getChildren();
         LinkedList<Node> result = new LinkedList<Node>();
         for (Node node : children) {
@@ -102,7 +104,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
     }
 
     // 疑问？？？
-    public LinkedList<Node> visitRpAttri(XPathParser.XPATHgen.XPATHParser.RpAttriContext ctx) {
+    public LinkedList<Node> visitRpAttri(XPATHParser.RpAttriContext ctx) {
         String attName = ctx.attName().getText();
 //        System.out.println("Attribute Name: " + attName);
         LinkedList<Node> children = getChildren();
@@ -121,7 +123,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
 
 
 
-    public LinkedList<Node> visitRpTag(XPathParser.XPATHgen.XPATHParser.RpTagContext ctx) {
+    public LinkedList<Node> visitRpTag(XPATHParser.RpTagContext ctx) {
         String tagName = ctx.tagName().ID().getText();
         LinkedList<Node> result = new LinkedList<Node>();
         // get children of each node in context
@@ -136,11 +138,11 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         return result;
     }
 
-    public LinkedList<Node> visitRpParentheses(XPathParser.XPATHgen.XPATHParser.RpParenthesesContext ctx) {
+    public LinkedList<Node> visitRpParentheses(XPATHParser.RpParenthesesContext ctx) {
         return visit(ctx.rp());
     }
 
-    public LinkedList<Node> visitRpComma(XPathParser.XPATHgen.XPATHParser.RpCommaContext ctx) {
+    public LinkedList<Node> visitRpComma(XPATHParser.RpCommaContext ctx) {
         // store the current context
         LinkedList<Node> contextTemp = context;
         LinkedList<Node> result = new LinkedList<Node>();
@@ -155,7 +157,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         return result;
     }
 
-    public LinkedList<Node> visitRpParent(XPathParser.XPATHgen.XPATHParser.RpParentContext ctx) {
+    public LinkedList<Node> visitRpParent(XPATHParser.RpParentContext ctx) {
         LinkedList<Node> result = new LinkedList<Node>();
         for (Node node : context) {
             if (!result.contains(node.getParentNode())) {
@@ -166,19 +168,19 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         return result;
     }
 
-    public LinkedList<Node> visitRpChildren(XPathParser.XPATHgen.XPATHParser.RpChildrenContext ctx) {
+    public LinkedList<Node> visitRpChildren(XPATHParser.RpChildrenContext ctx) {
         LinkedList<Node> result = getChildren();
         context = result;
         return result;
     }
 
-    public LinkedList<Node> visitRpSelf(XPathParser.XPATHgen.XPATHParser.RpSelfContext ctx) {
+    public LinkedList<Node> visitRpSelf(XPATHParser.RpSelfContext ctx) {
         return context;
     }
 
 
 
-    public LinkedList<Node> visitRpCondition(XPathParser.XPATHgen.XPATHParser.RpConditionContext ctx) {
+    public LinkedList<Node> visitRpCondition(XPATHParser.RpConditionContext ctx) {
         visit(ctx.rp());
         LinkedList<Node> result = visit(ctx.f());
         // update the context
@@ -186,7 +188,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         return result;
     }
 
-    public LinkedList<Node> visitFilterRp(XPathParser.XPATHgen.XPATHParser.FilterRpContext ctx) {
+    public LinkedList<Node> visitFilterRp(XPATHParser.FilterRpContext ctx) {
         // filter with relative path
         // store the context
         LinkedList<Node> contextTemp = context;
@@ -206,7 +208,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         return result;
     }
 
-    public LinkedList<Node> visitFilterEq(XPathParser.XPATHgen.XPATHParser.FilterEqContext ctx) {
+    public LinkedList<Node> visitFilterEq(XPATHParser.FilterEqContext ctx) {
         LinkedList<Node> contextTemp = context;
         LinkedList<Node> result = new LinkedList<Node>();
         for (Node node : contextTemp) {
@@ -237,7 +239,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         return result;
     }
 
-    public LinkedList<Node> visitFilterIs(XPathParser.XPATHgen.XPATHParser.FilterIsContext ctx) {
+    public LinkedList<Node> visitFilterIs(XPATHParser.FilterIsContext ctx) {
         LinkedList<Node> contextTemp = context;
         LinkedList<Node> result = new LinkedList<Node>();
         for (Node node : contextTemp) {
@@ -266,11 +268,11 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         return result;
     }
 
-    public LinkedList<Node> visitFilterParentheses(XPathParser.XPATHgen.XPATHParser.FilterParenthesesContext ctx) {
+    public LinkedList<Node> visitFilterParentheses(XPATHParser.FilterParenthesesContext ctx) {
         return visit(ctx.f());
     }
 
-    public LinkedList<Node> visitFilterOR(XPathParser.XPATHgen.XPATHParser.FilterORContext ctx) {
+    public LinkedList<Node> visitFilterOR(XPATHParser.FilterORContext ctx) {
         LinkedList<Node> List_0 = visit(ctx.f(0)), List_1 = visit(ctx.f(1));
         for (Node n : List_1) {
             if (!List_0.contains(n)) {List_0.add(n);}
@@ -278,7 +280,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         return List_0;
     }
 
-    public LinkedList<Node> visitFilterAND(XPathParser.XPATHgen.XPATHParser.FilterANDContext ctx) {
+    public LinkedList<Node> visitFilterAND(XPATHParser.FilterANDContext ctx) {
         LinkedList<Node> List_0 = visit(ctx.f(0)), List_1 = visit(ctx.f(1)), res = new LinkedList<Node>();
         for (Node n : List_0) {
             if (List_1.contains(n)) {res.add(n);}
@@ -286,7 +288,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         return res;
     }
 
-    public LinkedList<Node> visitFilterNOT(XPathParser.XPATHgen.XPATHParser.FilterNOTContext ctx) {
+    public LinkedList<Node> visitFilterNOT(XPATHParser.FilterNOTContext ctx) {
 
         // need to store a temp context since when call visit(ctx.f()), context will be changed
         LinkedList<Node> contextTemp = context;
