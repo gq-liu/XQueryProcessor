@@ -1,3 +1,5 @@
+package XPathParser.XPATHgen;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -8,7 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.util.LinkedList;
 
-public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>>{
+public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>> {
     //
     LinkedList<Node> context = new LinkedList<Node>();
     Document doc = null;
@@ -194,7 +196,44 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>>{
 
     @Override
     public LinkedList<Node> visitFilterRp(XPATHParser.FilterRpContext ctx) {
+        return visit(ctx.rp());
+    }
 
+    @Override
+    public LinkedList<Node> visitFilterParentheses(XPATHParser.FilterParenthesesContext ctx) {
+        return visit(ctx.f());
+    }
+
+    @Override
+    public LinkedList<Node> visitFilterOR(XPATHParser.FilterORContext ctx) {
+        LinkedList<Node> List_0 = visit(ctx.f(0)), List_1 = visit(ctx.f(1));
+        for (Node n : List_1) {
+            if (!List_0.contains(n)) {List_0.add(n);}
+        }
+        return List_0;
+    }
+
+    @Override
+    public LinkedList<Node> visitFilterAND(XPATHParser.FilterANDContext ctx) {
+        LinkedList<Node> List_0 = visit(ctx.f(0)), List_1 = visit(ctx.f(1)), res = new LinkedList<Node>();
+        for (Node n : List_0) {
+            if (List_1.contains(n)) {res.add(n);}
+        }
+        return res;
+    }
+
+    @Override
+    public LinkedList<Node> visitFilterNOT(XPATHParser.FilterNOTContext ctx) {
+        LinkedList<Node> notList = visit(ctx.f());
+        if (notList.isEmpty()) {
+            return this.context;
+        } else {
+            LinkedList<Node> res =  new LinkedList<Node>();
+            for (Node n : this.context) {
+                if (!notList.contains(n)) {res.add(n);}
+            }
+            return res;
+        }
     }
 
     // return all children of context nodes;
