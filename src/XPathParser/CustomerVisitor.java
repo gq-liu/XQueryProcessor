@@ -49,7 +49,6 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>>{
     //
     @Override
     public LinkedList<Node> visitApDouble(XPATHParser.ApDoubleContext ctx) {
-
         // visit the doc node to parse XML to DOM
         visit(ctx.doc());
         // get all descenders from each node in context
@@ -67,6 +66,7 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>>{
     @Override
     public LinkedList<Node> visitApSingle(XPATHParser.ApSingleContext ctx) {
         // visit the doc node to parse XML to DOM
+
         visit(ctx.doc());
         LinkedList<Node> result = visit(ctx.rp());
         return result;
@@ -129,6 +129,7 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>>{
         // get children of each node in context
         LinkedList<Node> children = getChildren();
         for (Node node : children) {
+
             if (node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals(tagName)) {
                 result.add(node);
             }
@@ -186,15 +187,95 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>>{
     @Override
     public LinkedList<Node> visitRpCondition(XPATHParser.RpConditionContext ctx) {
         visit(ctx.rp());
-        // context ????
         LinkedList<Node> result = visit(ctx.f());
+        // update the context
         context = result;
         return result;
     }
 
     @Override
     public LinkedList<Node> visitFilterRp(XPATHParser.FilterRpContext ctx) {
+        // filter with relative path
+        // store the context
+        LinkedList<Node> contextTemp = context;
+        LinkedList<Node> result = new LinkedList<Node>();
 
+        // for each node in context, check whether it is satisfied the condition
+        for (Node node : contextTemp) {
+            // clear is O(N)
+            context.clear();
+            // use this particular node as current context
+            context.add(node);
+            LinkedList<Node> tempRes = visit(ctx.rp());
+            if (!tempRes.isEmpty()) {  // if it is NOT empty, the node is satisfied the condition
+                result.add(node);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public LinkedList<Node> visitFilterEq(XPATHParser.FilterEqContext ctx) {
+        LinkedList<Node> contextTemp = context;
+        LinkedList<Node> result = new LinkedList<Node>();
+        for (Node node : contextTemp) {
+            LinkedList<Node> temp = new LinkedList<Node>();
+            temp.add(node);
+            // find left
+            context = temp;
+            LinkedList<Node> left = visit(ctx.rp(0));
+            // find right
+            context = temp;
+            LinkedList<Node> right = visit(ctx.rp(1));
+            boolean hasFound = false;
+            for (Node leftNode : left) {
+                for (Node rightNode : right) {
+                    if (leftNode.isEqualNode(rightNode)) {
+                        hasFound = true;
+                        break;
+                    }
+                }
+                if (hasFound) { break; }
+            }
+            // if hasFind
+            if (hasFound && !result.contains(node)) {
+                result.add(node);
+            }
+        }
+        context = result;
+        return result;
+    }
+
+    @Override
+    public LinkedList<Node> visitFilterIs(XPATHParser.FilterIsContext ctx) {
+        LinkedList<Node> contextTemp = context;
+        LinkedList<Node> result = new LinkedList<Node>();
+        for (Node node : contextTemp) {
+            LinkedList<Node> temp = new LinkedList<Node>();
+            temp.add(node);
+            // find left;
+            context = temp;
+            LinkedList<Node> left = visit(ctx.rp(0));
+            context = temp;
+            LinkedList<Node> right = visit(ctx.rp(1));
+            boolean hasFound = false;
+            for (Node leftNode : left) {
+                for (Node rightNode : right) {
+                    if (leftNode.isSameNode(rightNode)) {
+                        hasFound = true;
+                        break;
+                    }
+                    if (hasFound) {
+                        break;
+                    }
+                }
+            }
+            if (hasFound && !result.contains(node)) {
+                result.add(node);
+            }
+        }
+        context = result;
+        return result;
     }
 
     // return all children of context nodes;
@@ -221,4 +302,24 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>>{
         }
         return res;
     }
+
+//    private boolean isValueEq(Node node1, Node node2) {
+//        if (node1.getNodeType() != node2.getNodeType()) { return false; }
+//
+//        if (node1.getNodeType() == Node.ELEMENT_NODE
+//                && node1.getNodeName().equals(node2.getNodeName())
+//                && node2.getChildNodes().getLength() == node2.getChildNodes().getLength()
+//                || node1.getNodeType() == Node.TEXT_NODE
+//                && node1.getTextContent().equals(node2.getTextContent())
+//                && node1.getChildNodes().getLength() == node2.getChildNodes().getLength()) {
+//            NodeList children1 = node1.getChildNodes();
+//            NodeList children2 = node2.getChildNodes();
+//            for (int i = 0; i < children1.getLength(); i++) {
+//                if (!isValueEq(children1.item(i), children2.item(i))) {
+//                    return false;
+//                }
+//            }
+//        }
+//        return true;
+//    }
 }
