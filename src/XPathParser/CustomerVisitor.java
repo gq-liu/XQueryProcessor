@@ -1,4 +1,5 @@
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -18,6 +19,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
 
         // create the file
         File xmlFile = new File(ctx.filename().getText());
+        System.out.println(xmlFile.getAbsolutePath());
         // convert XML file to DOM
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setIgnoringElementContentWhitespace(true);
@@ -35,7 +37,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
             } catch (Exception e) {
                 e.printStackTrace();
             }
-         }
+        }
 
         if (doc != null) {
             doc.getDocumentElement().normalize();
@@ -43,6 +45,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         result.add(doc);
         context = result;
         return result;
+
     }
 
     //
@@ -101,11 +104,15 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
     // 疑问？？？
     public LinkedList<Node> visitRpAttri(XPathParser.XPATHgen.XPATHParser.RpAttriContext ctx) {
         String attName = ctx.attName().getText();
+//        System.out.println("Attribute Name: " + attName);
         LinkedList<Node> children = getChildren();
         LinkedList<Node> result = new LinkedList<Node>();
         for (Node node : children) {
-            if (node.getNodeType() == Node.ATTRIBUTE_NODE && node.getTextContent().equals(attName)) {
-                result.add(node);
+//            System.out.println(node.getNodeType() == Node.ATTRIBUTE_NODE);
+            if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+                if (node.getNodeName().equals(attName)) {
+                    result.add(node);
+                }
             }
         }
         context = result;
@@ -116,12 +123,10 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
 
     public LinkedList<Node> visitRpTag(XPathParser.XPATHgen.XPATHParser.RpTagContext ctx) {
         String tagName = ctx.tagName().ID().getText();
-        System.out.println("TagName: " + tagName);
         LinkedList<Node> result = new LinkedList<Node>();
         // get children of each node in context
         LinkedList<Node> children = getChildren();
         for (Node node : children) {
-
             if (node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals(tagName)) {
                 result.add(node);
             }
@@ -144,7 +149,7 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         // restore the context
         context = contextTemp;
         // get the result from right rp
-        result.addAll(visit(ctx.rp(2)));
+        result.addAll(visit(ctx.rp(1)));
         // update the result
         context = result;
         return result;
@@ -153,7 +158,9 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
     public LinkedList<Node> visitRpParent(XPathParser.XPATHgen.XPATHParser.RpParentContext ctx) {
         LinkedList<Node> result = new LinkedList<Node>();
         for (Node node : context) {
-            result.add(node.getParentNode());
+            if (!result.contains(node.getParentNode())) {
+                result.add(node.getParentNode());
+            }
         }
         context = result;
         return result;
@@ -188,9 +195,9 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         // for each node in context, check whether it is satisfied the condition
         for (Node node : contextTemp) {
             // clear is O(N)
-            context.clear();
-            // use this particular node as current context
-            context.add(node);
+            LinkedList<Node> oneNodeContext = new LinkedList<Node>();
+            oneNodeContext.add(node);
+            context = oneNodeContext;
             LinkedList<Node> tempRes = visit(ctx.rp());
             if (!tempRes.isEmpty()) {  // if it is NOT empty, the node is satisfied the condition
                 result.add(node);
@@ -280,16 +287,38 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
     }
 
     public LinkedList<Node> visitFilterNOT(XPathParser.XPATHgen.XPATHParser.FilterNOTContext ctx) {
-        LinkedList<Node> notList = visit(ctx.f());
-        if (notList.isEmpty()) {
-            return this.context;
+
+        // need to store a temp context since when call visit(ctx.f()), context will be changed
+        LinkedList<Node> contextTemp = context;
+        LinkedList<Node> result = new LinkedList<Node>();
+        LinkedList<Node> excludeNodes = visit(ctx.f());
+
+        if (excludeNodes.isEmpty()) {
+            result = contextTemp;
         } else {
-            LinkedList<Node> res =  new LinkedList<Node>();
-            for (Node n : this.context) {
-                if (!notList.contains(n)) {res.add(n);}
+            for (Node n : contextTemp) { // need use contextTemp since context has changed
+                if (!excludeNodes.contains(n)) {
+                    result.add(n);
+                }
             }
-            return res;
         }
+        // update context
+        context = result;
+        return result;
+
+//        LinkedList<Node> notList = visit(ctx.f());
+//        if (notList.isEmpty()) {
+//
+//            return this.context;
+//        } else {
+//            LinkedList<Node> res =  new LinkedList<Node>();
+//            for (Node n : this.context) {
+//                if (!notList.contains(n)) {res.add(n);}
+//            }
+//            // need to update context
+//            context = res;
+//            return res;
+//        }
     }
 
     // return all children of context nodes;
@@ -297,7 +326,15 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
         LinkedList<Node> result = new LinkedList<Node>();
         for (Node node : context) {
             NodeList nodeList = node.getChildNodes();
-            for (int i = 0; i < context.size(); i++) {
+
+            NamedNodeMap nodeMap = node.getAttributes();
+            if (nodeMap != null) {
+                for (int i = 0; i < nodeMap.getLength(); i++) {
+                    result.add(nodeMap.item(i));
+                }
+            }
+
+            for (int i = 0; i < nodeList.getLength(); i++) {
                 result.add(nodeList.item(i));
             }
         }
@@ -308,6 +345,13 @@ public class CustomerVisitor extends XPathParser.XPATHgen.XPATHBaseVisitor<Linke
     private LinkedList<Node> getDescenders(Node node) {
         LinkedList<Node> res = new LinkedList<Node>();
         NodeList nodeList = node.getChildNodes();
+
+        NamedNodeMap nodeMap = node.getAttributes();
+        if (nodeMap != null) {
+            for (int i = 0; i < nodeMap.getLength(); i++) {
+                res.add(nodeMap.item(i));
+            }
+        }
         for (int i = 0; i < nodeList.getLength(); i++) {
             Node curr = nodeList.item(i);
             res.add(curr);

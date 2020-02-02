@@ -21,6 +21,5 @@ public class XPathParser {
         CustomerVisitor customerVisitor = new CustomerVisitor();
         LinkedList<Node> result = customerVisitor.visit(parseTree);
         System.out.println(result.toString());
-
     }
 }
