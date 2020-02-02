@@ -88,7 +88,7 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>> {
             result.addAll(getDescenders(node));
         }
         context = result;
-        return result;
+        return visit(ctx.rp(1));
     }
 
     public LinkedList<Node> visitRpText(XPATHParser.RpTextContext ctx) {
@@ -327,8 +327,9 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>> {
     private LinkedList<Node> getChildren() {
         LinkedList<Node> result = new LinkedList<Node>();
         for (Node node : context) {
+            // only ELEMENT_NODE and DOCUMENT_NODE has children
+            if (node.getNodeType() != Node.ELEMENT_NODE && node.getNodeType() != Node.DOCUMENT_NODE) { continue; }
             NodeList nodeList = node.getChildNodes();
-
             NamedNodeMap nodeMap = node.getAttributes();
             if (nodeMap != null) {
                 for (int i = 0; i < nodeMap.getLength(); i++) {
