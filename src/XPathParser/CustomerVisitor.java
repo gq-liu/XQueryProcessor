@@ -21,7 +21,7 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>> {
 
         // create the file
         File xmlFile = new File(ctx.filename().getText());
-        System.out.println(xmlFile.getAbsolutePath());
+        // System.out.println(xmlFile.getAbsolutePath());
         // convert XML file to DOM
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setIgnoringElementContentWhitespace(true);
@@ -160,9 +160,9 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>> {
     public LinkedList<Node> visitRpParent(XPATHParser.RpParentContext ctx) {
         LinkedList<Node> result = new LinkedList<Node>();
         for (Node node : context) {
-            if (!result.contains(node.getParentNode())) {
-                result.add(node.getParentNode());
-            }
+            if (node == null || result.contains(node.getParentNode())) { continue; }
+            result.add(node.getParentNode());
+
         }
         context = result;
         return result;
@@ -323,7 +323,7 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>> {
         LinkedList<Node> result = new LinkedList<Node>();
         for (Node node : context) {
             // only ELEMENT_NODE and DOCUMENT_NODE has children
-            if (node.getNodeType() != Node.ELEMENT_NODE && node.getNodeType() != Node.DOCUMENT_NODE) { continue; }
+            if (node == null || node.getNodeType() != Node.ELEMENT_NODE && node.getNodeType() != Node.DOCUMENT_NODE) { continue; }
             NodeList nodeList = node.getChildNodes();
             NamedNodeMap nodeMap = node.getAttributes();
             if (nodeMap != null) {

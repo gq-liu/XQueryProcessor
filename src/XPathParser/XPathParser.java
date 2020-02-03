@@ -7,15 +7,21 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 public class XPathParser {
     public static void main(String[] args) throws Exception {
-        String filename = "/Users/mac126/19fall/udemy/spring/cse232bProject/testFiles/test1.txt";
-        InputStream in = new FileInputStream(filename);
-        ANTLRInputStream input = new ANTLRInputStream(in);
+
+        String XPath = args[0];
+        InputStream XPathStream = new ByteArrayInputStream(XPath.getBytes(StandardCharsets.UTF_8));
+
+
+//        String filename = args[0];
+//        InputStream in = new FileInputStream(filename);
+        ANTLRInputStream input = new ANTLRInputStream(XPathStream);
         XPATHLexer xPathLexer = new XPATHLexer(input);
         CommonTokenStream commonTokenStream = new CommonTokenStream(xPathLexer);
         XPATHParser xpathParser = new XPATHParser(commonTokenStream);
@@ -24,10 +30,10 @@ public class XPathParser {
 
         CustomerVisitor customerVisitor = new CustomerVisitor();
         LinkedList<Node> result = customerVisitor.visit(parseTree);
-        System.out.println(result.size());
+        System.out.println("Result set size: " + result.size());
         // output
         for (Node node : result) {
-            printNode(node, "");
+            if (node != null) printNode(node, "");
         }
     }
 
