@@ -273,19 +273,28 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>> {
     }
 
     public LinkedList<Node> visitFilterOR(XPATHParser.FilterORContext ctx) {
-        LinkedList<Node> List_0 = visit(ctx.f(0)), List_1 = visit(ctx.f(1));
-        for (Node n : List_1) {
-            if (!List_0.contains(n)) {List_0.add(n);}
+        LinkedList<Node> contextTemp = context;
+        LinkedList<Node> list0 = visit(ctx.f(0));
+        context = contextTemp;
+        LinkedList<Node> list1 = visit(ctx.f(1));
+        for (Node n : list1) {
+            if (!list0.contains(n)) {list0.add(n);}
         }
-        return List_0;
+        context = list0;
+        return list0;
     }
 
     public LinkedList<Node> visitFilterAND(XPATHParser.FilterANDContext ctx) {
-        LinkedList<Node> List_0 = visit(ctx.f(0)), List_1 = visit(ctx.f(1)), res = new LinkedList<Node>();
-        for (Node n : List_0) {
-            if (List_1.contains(n)) {res.add(n);}
+        LinkedList<Node> contextTemp = context;
+        LinkedList<Node> result = new LinkedList<Node>();
+        LinkedList<Node> list0 = visit(ctx.f(0));
+        context = contextTemp;
+        LinkedList<Node> list1 = visit(ctx.f(1));
+        for (Node n : list0) {
+            if (list1.contains(n)) {result.add(n);}
         }
-        return res;
+        context = result;
+        return result;
     }
 
     public LinkedList<Node> visitFilterNOT(XPATHParser.FilterNOTContext ctx) {
@@ -307,20 +316,6 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>> {
         // update context
         context = result;
         return result;
-
-//        LinkedList<Node> notList = visit(ctx.f());
-//        if (notList.isEmpty()) {
-//
-//            return this.context;
-//        } else {
-//            LinkedList<Node> res =  new LinkedList<Node>();
-//            for (Node n : this.context) {
-//                if (!notList.contains(n)) {res.add(n);}
-//            }
-//            // need to update context
-//            context = res;
-//            return res;
-//        }
     }
 
     // return all children of context nodes;
@@ -363,24 +358,4 @@ public class CustomerVisitor extends XPATHBaseVisitor<LinkedList<Node>> {
         }
         return res;
     }
-
-//    private boolean isValueEq(Node node1, Node node2) {
-//        if (node1.getNodeType() != node2.getNodeType()) { return false; }
-//
-//        if (node1.getNodeType() == Node.ELEMENT_NODE
-//                && node1.getNodeName().equals(node2.getNodeName())
-//                && node2.getChildNodes().getLength() == node2.getChildNodes().getLength()
-//                || node1.getNodeType() == Node.TEXT_NODE
-//                && node1.getTextContent().equals(node2.getTextContent())
-//                && node1.getChildNodes().getLength() == node2.getChildNodes().getLength()) {
-//            NodeList children1 = node1.getChildNodes();
-//            NodeList children2 = node2.getChildNodes();
-//            for (int i = 0; i < children1.getLength(); i++) {
-//                if (!isValueEq(children1.item(i), children2.item(i))) {
-//                    return false;
-//                }
-//            }
-//        }
-//        return true;
-//    }
 }
