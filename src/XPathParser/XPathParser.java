@@ -17,10 +17,6 @@ public class XPathParser {
 
         String XPath = args[0];
         InputStream XPathStream = new ByteArrayInputStream(XPath.getBytes(StandardCharsets.UTF_8));
-
-
-//        String filename = args[0];
-//        InputStream in = new FileInputStream(filename);
         ANTLRInputStream input = new ANTLRInputStream(XPathStream);
         XPATHLexer xPathLexer = new XPATHLexer(input);
         CommonTokenStream commonTokenStream = new CommonTokenStream(xPathLexer);
@@ -30,8 +26,7 @@ public class XPathParser {
 
         CustomerVisitor customerVisitor = new CustomerVisitor();
         LinkedList<Node> result = customerVisitor.visit(parseTree);
-//        System.out.println("Result set size: " + result.size());
-        // output
+        if (result == null) { throw new Exception("Invalid XPath Expression!"); }
         for (Node node : result) {
             if (node != null) printNode(node, "");
         }
@@ -59,7 +54,7 @@ public class XPathParser {
         } else if (node.getNodeType() == Node.TEXT_NODE) {
             System.out.println(tab + node.getTextContent());
         } else if (node.getNodeType() == Node.DOCUMENT_NODE) {
-            System.out.println();
+            System.out.println("DOCUMENT_NODE");
         }
     }
 }
