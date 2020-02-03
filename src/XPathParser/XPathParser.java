@@ -30,7 +30,7 @@ public class XPathParser {
 
         CustomerVisitor customerVisitor = new CustomerVisitor();
         LinkedList<Node> result = customerVisitor.visit(parseTree);
-        System.out.println("Result set size: " + result.size());
+//        System.out.println("Result set size: " + result.size());
         // output
         for (Node node : result) {
             if (node != null) printNode(node, "");
@@ -58,6 +58,8 @@ public class XPathParser {
             System.out.println(tab + "<@" + node.getNodeName() + "=" + node.getNodeValue() + ">");
         } else if (node.getNodeType() == Node.TEXT_NODE) {
             System.out.println(tab + node.getTextContent());
+        } else if (node.getNodeType() == Node.DOCUMENT_NODE) {
+            System.out.println();
         }
     }
 }
