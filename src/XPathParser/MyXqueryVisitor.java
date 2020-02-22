@@ -73,7 +73,8 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
     @Override
     public LinkedList<Node> visitXqStringConstant(XQUERYParser.XqStringConstantContext ctx) {
         LinkedList<Node> result = new LinkedList<>();
-        Node stringConstantNode = inputDoc.createTextNode(ctx.StringConstant().getText());
+        String name = ctx.StringConstant().getText();
+        Node stringConstantNode = inputDoc.createTextNode(name.substring(1, name.length() - 1));
         result.add(stringConstantNode);
         return result;
     }
@@ -123,6 +124,7 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
     public LinkedList<Node> visitCondEmpty(XQUERYParser.CondEmptyContext ctx) {
         LinkedList<Node> result = new LinkedList<>();
         LinkedList<Node> tempRes = visit(ctx.xq());
+//        System.out.println(tempRes.size());
         if (tempRes.isEmpty()) {
             Node specifyEmpty = inputDoc.createElement("specifyEmpty");
             result.add(specifyEmpty);
@@ -539,7 +541,7 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         int numVar = ctx.forClause().Var().size();
         if (i < numVar) {
             String var = ctx.forClause().Var(i).getText();
-            System.out.println("forClause Var : " + var);
+//            System.out.println("forClause Var : " + var);
             LinkedList<Node> nodes = visit(ctx.forClause().xq(i));
             for (Node node : nodes) {
                 contextMap.remove(var);
