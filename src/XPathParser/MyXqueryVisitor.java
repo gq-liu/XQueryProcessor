@@ -203,6 +203,7 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
 
     @Override
     public LinkedList<Node> visitCondOR(XQUERYParser.CondORContext ctx) {
+
         LinkedList<Node> contextTemp = context;
         LinkedList<Node> list0 = visit(ctx.cond(0));
         context = contextTemp;
@@ -212,11 +213,21 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         }
         context = list0;
         return list0;
+
+//        LinkedList<Node> result = new LinkedList<>();
+//        LinkedList<Node> tempContext = context;
+//        LinkedList<Node> left = visit(ctx.cond(0));
+//        context = tempContext;
+//        LinkedList<Node> right = visit(ctx.cond(1));
+//        context = tempContext;
+//        result.addAll(left);
+//        result.addAll(right);
+//        return result;
     }
 
     @Override
     public LinkedList<Node> visitCondComma(XQUERYParser.CondCommaContext ctx) {
-        return super.visitCondComma(ctx);
+        return visit(ctx.cond());
     }
 
     @Override
