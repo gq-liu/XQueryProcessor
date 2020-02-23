@@ -1,3 +1,6 @@
+package XPathParser;
+
+import XPathParser.MyXqueryVisitor;
 import XQUERYgen.XQUERYLexer;
 import XQUERYgen.XQUERYParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -15,8 +18,8 @@ public class XQueryProcessor {
     public static void main(String[] args) throws Exception {
 
 
-        String XPath = args[0];
-        String inputPath = "/Users/liuguoqiang/Study/20win/cse232b/cse232bProject/testFiles/test1.txt";
+        //String XPath = args[0];
+        String inputPath = "/Users/tianyusun/Desktop/20winter/CSE232B/CSE232WI20PROJECT/cse232bProject/testFiles/test1.txt";
         String resultPath = "./result.xml";
         //InputStream XPathStream = new ByteArrayInputStream(XPath.getBytes(StandardCharsets.UTF_8));
         InputStream inputStream = new FileInputStream(inputPath);

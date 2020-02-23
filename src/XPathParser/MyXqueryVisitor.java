@@ -1,3 +1,5 @@
+package XPathParser;
+
 import XQUERYgen.XQUERYBaseVisitor;
 import XQUERYgen.XQUERYParser;
 import org.w3c.dom.Document;
@@ -152,7 +154,32 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
 
     @Override
     public LinkedList<Node> visitCondIs(XQUERYParser.CondIsContext ctx) {
-        return super.visitCondIs(ctx);
+        LinkedList<Node> contextTemp = context;
+        LinkedList<Node> result = new LinkedList<Node>();
+        for (Node node : contextTemp) {
+            LinkedList<Node> temp = new LinkedList<Node>();
+            temp.add(node);
+            // find left;
+            context = temp;
+            LinkedList<Node> left = visit(ctx.xq(0));
+            context = temp;
+            LinkedList<Node> right = visit(ctx.xq(1));
+            boolean hasFound = false;
+            for (Node leftNode : left) {
+                for (Node rightNode : right) {
+                    if (leftNode.isSameNode(rightNode)) {
+                        hasFound = true;
+                        break;
+                    }
+                }
+                if (hasFound) { break; }
+            }
+            if (hasFound && !result.contains(node)) {
+                result.add(node);
+            }
+        }
+        context = result;
+        return result;
     }
 
     @Override
@@ -162,20 +189,40 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
 
     @Override
     public LinkedList<Node> visitCondAND(XQUERYParser.CondANDContext ctx) {
-        return super.visitCondAND(ctx);
+        LinkedList<Node> contextTemp = context;
+        LinkedList<Node> result = new LinkedList<Node>();
+        LinkedList<Node> list0 = visit(ctx.cond(0));
+        context = contextTemp;
+        LinkedList<Node> list1 = visit(ctx.cond(1));
+        for (Node n : list0) {
+            if (list1.contains(n)) {result.add(n);}
+        }
+        context = result;
+        return result;
     }
 
     @Override
     public LinkedList<Node> visitCondOR(XQUERYParser.CondORContext ctx) {
-        LinkedList<Node> result = new LinkedList<>();
-        LinkedList<Node> tempContext = context;
-        LinkedList<Node> left = visit(ctx.cond(0));
-        context = tempContext;
-        LinkedList<Node> right = visit(ctx.cond(1));
-        context = tempContext;
-        result.addAll(left);
-        result.addAll(right);
-        return result;
+
+        LinkedList<Node> contextTemp = context;
+        LinkedList<Node> list0 = visit(ctx.cond(0));
+        context = contextTemp;
+        LinkedList<Node> list1 = visit(ctx.cond(1));
+        for (Node n : list1) {
+            if (!list0.contains(n)) {list0.add(n);}
+        }
+        context = list0;
+        return list0;
+
+//        LinkedList<Node> result = new LinkedList<>();
+//        LinkedList<Node> tempContext = context;
+//        LinkedList<Node> left = visit(ctx.cond(0));
+//        context = tempContext;
+//        LinkedList<Node> right = visit(ctx.cond(1));
+//        context = tempContext;
+//        result.addAll(left);
+//        result.addAll(right);
+//        return result;
     }
 
     @Override
@@ -185,7 +232,24 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
 
     @Override
     public LinkedList<Node> visitCondNOT(XQUERYParser.CondNOTContext ctx) {
-        return super.visitCondNOT(ctx);
+        // need to store a temp context since when call visit(ctx.f()), context will be changed
+        LinkedList<Node> contextTemp = context;
+        LinkedList<Node> result = new LinkedList<Node>();
+        LinkedList<Node> excludeNodes = visit(ctx.cond());
+
+        if (excludeNodes.isEmpty()) {
+            result = contextTemp;
+        } else {
+            for (Node n : contextTemp) { // need use contextTemp since context has changed
+                if (!excludeNodes.contains(n)) {
+                    result.add(n);
+                }
+            }
+        }
+        // update context
+        context = result;
+        return result;
+
     }
 
     /* XPath Visitor */
