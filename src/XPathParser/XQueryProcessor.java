@@ -1,6 +1,4 @@
-package XPathParser;
 
-import XPathParser.MyXqueryVisitor;
 import XQUERYgen.XQUERYLexer;
 import XQUERYgen.XQUERYParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -19,7 +17,7 @@ public class XQueryProcessor {
 
 
         //String XPath = args[0];
-        String inputPath = "/Users/tianyusun/Desktop/20winter/CSE232B/CSE232WI20PROJECT/cse232bProject/testFiles/test1.txt";
+        String inputPath = "./testFiles/test12.txt";
         String resultPath = "./result.xml";
         //InputStream XPathStream = new ByteArrayInputStream(XPath.getBytes(StandardCharsets.UTF_8));
         InputStream inputStream = new FileInputStream(inputPath);
@@ -33,6 +31,7 @@ public class XQueryProcessor {
         MyXqueryVisitor myXqueryVisitor = new MyXqueryVisitor();
         LinkedList<Node> result = myXqueryVisitor.visit(parseTree);
         if (result == null) { throw new Exception("Invalid XPath Expression!"); }
+        System.out.println("result size: " + result.size());
         for (Node node : result) {
             if (node != null) printNode(node, "");
         }

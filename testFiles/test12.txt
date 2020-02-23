@@ -1,0 +1,3 @@
+for $s in doc("j_caesar.xml")//SPEAKER,
+    $a in doc("j_caesar.xml")//ACT
+return <when>{$a/TITLE/text()}</when>
