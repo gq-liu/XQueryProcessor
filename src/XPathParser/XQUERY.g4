@@ -28,7 +28,7 @@ cond : xq EQUALS xq                                                 # condEq
      ;
 
 Var: '$' ID;
-StringConstant : '"'+[a-zA-Z0-9,.!?; ''""-]+'"';
+StringConstant : '"'[a-zA-Z0-9,.!?; '"-]+'"';
 
 
 
