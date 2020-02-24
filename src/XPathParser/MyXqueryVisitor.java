@@ -441,9 +441,9 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
     public LinkedList<Node> visitRpParent(XQUERYParser.RpParentContext ctx) {
         LinkedList<Node> result = new LinkedList<Node>();
         for (Node node : context) {
-            if (node == null || result.contains(node.getParentNode())) { continue; }
-            result.add(node.getParentNode());
-
+            if (node == null || node.getParentNode() == null
+                    || result.contains(node.getParentNode().getParentNode())) { continue; }
+            result.add(node.getParentNode().getParentNode());
         }
         context = result;
         return result;
@@ -451,9 +451,10 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
 
     @Override
     public LinkedList<Node> visitRpChildren(XQUERYParser.RpChildrenContext ctx) {
-        LinkedList<Node> result = getChildren();
-        context = result;
-        return result;
+        // LinkedList<Node> result = getChildren();
+        // context = result;
+        //return result;
+        return context;
     }
 
     @Override

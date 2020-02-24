@@ -17,7 +17,7 @@ public class XQueryProcessor {
 
 
         //String XPath = args[0];
-        String inputPath = "./testFiles/test16.txt";
+        String inputPath = "./testFiles/test21.txt";
         String resultPath = "./result.xml";
         //InputStream XPathStream = new ByteArrayInputStream(XPath.getBytes(StandardCharsets.UTF_8));
         InputStream inputStream = new FileInputStream(inputPath);
