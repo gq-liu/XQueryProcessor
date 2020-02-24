@@ -1,4 +1,3 @@
-
 import XQUERYgen.XQUERYLexer;
 import XQUERYgen.XQUERYParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -18,7 +17,6 @@ public class XQueryProcessor {
 
         String inputPath = args[0];
         //String inputPath = "./testFiles/test21.txt";
-        //InputStream XPathStream = new ByteArrayInputStream(XPath.getBytes(StandardCharsets.UTF_8));
         InputStream inputStream = new FileInputStream(inputPath);
         ANTLRInputStream input = new ANTLRInputStream(inputStream);
         XQUERYLexer xqueryLexer = new XQUERYLexer(input);
@@ -30,7 +28,7 @@ public class XQueryProcessor {
         MyXqueryVisitor myXqueryVisitor = new MyXqueryVisitor();
         LinkedList<Node> result = myXqueryVisitor.visit(parseTree);
         if (result == null) { throw new Exception("Invalid XPath Expression!"); }
-        System.out.println("result size: " + result.size());
+        // System.out.println("result size: " + result.size());
         for (Node node : result) {
             if (node != null) printNode(node, "");
         }
@@ -50,7 +48,7 @@ public class XQueryProcessor {
                     printNode(nodeList.item(i), tab + "  ");
                 }
             }
-            System.out.println(tab + "<" + node.getNodeName() + "/>");
+            System.out.println(tab + "</" + node.getNodeName() + ">");
 
         } else if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
             System.out.println(tab + "<@" + node.getNodeName() + "=" + node.getNodeValue() + ">");
