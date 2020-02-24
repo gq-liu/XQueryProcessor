@@ -60,7 +60,6 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         LinkedList<Node> tempNodes = visit(ctx.xq());
         LinkedList<Node> result = new LinkedList<>();
         for (Node node : tempNodes) {
-            System.out.println("GET HERE: " + node.getNodeName());
             result.addAll(getDescenders(node));
         }
         context = result;
@@ -76,7 +75,6 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
     public LinkedList<Node> visitXqStringConstant(XQUERYParser.XqStringConstantContext ctx) {
         LinkedList<Node> result = new LinkedList<>();
         String name = ctx.StringConstant().getText();
-        System.out.println(name.substring(1, name.length() - 1));
         Node stringConstantNode = inputDoc.createTextNode(name.substring(1, name.length() - 1));
         result.add(stringConstantNode);
         return result;
@@ -156,17 +154,12 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         if (left == null || right == null || left.isEmpty() || right.isEmpty()) { return result; }
         for (Node leftNode : left) {
             for (Node rightNode : right) {
-                System.out.println();
-                System.out.println("            left:" + leftNode.getTextContent());
-                System.out.println("            right:" + rightNode.getTextContent());
-                System.out.println();
                 if (leftNode.isEqualNode(rightNode)) {
                     result.add(leftNode);
                     break;
                 }
             }
         }
-        System.out.println("result.size(): " + result.size());
         return result;
     }
 
@@ -227,10 +220,8 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         LinkedList<Node> contextTemp = context;
         LinkedList<Node> result = new LinkedList<>();
         LinkedList<Node> list0 = visit(ctx.cond(0));
-        //System.out.println("list0 : " + list0.size());
         context = contextTemp;
         LinkedList<Node> list1 = visit(ctx.cond(1));
-        //System.out.println("list1 : " + list1.size());
         if (!list0.isEmpty() && !list1.isEmpty()) {
             Node specifyTrue = inputDoc.createElement("specifyTrue");
             result.add(specifyTrue);
@@ -299,7 +290,6 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         if (inputDoc == null) {
             // create the file
             File xmlFile = new File(ctx.filename().getText());
-            // System.out.println(xmlFile.getAbsolutePath());
             // convert XML file to DOM
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setIgnoringElementContentWhitespace(true);
@@ -402,11 +392,9 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
     @Override
     public LinkedList<Node> visitRpAttri(XQUERYParser.RpAttriContext ctx) {
         String attName = ctx.attName().getText();
-//        System.out.println("Attribute Name: " + attName);
         LinkedList<Node> children = getChildren();
         LinkedList<Node> result = new LinkedList<Node>();
         for (Node node : children) {
-//            System.out.println(node.getNodeType() == Node.ATTRIBUTE_NODE);
             if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
                 if (node.getNodeName().equals(attName)) {
                     result.add(node);
@@ -673,20 +661,15 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         int numVar = ctx.forClause().Var().size();
         if (i < numVar) {
             String var = ctx.forClause().Var(i).getText();
-            System.out.println("forClause Var : " + var);
             LinkedList<Node> nodes = visit(ctx.forClause().xq(i));
-            System.out.println("NODE SIZE: " + nodes.size());
             for (int k = 0; k < nodes.size(); k++) {
             //for (Node node : nodes) {
-                //System.out.println("Nodes size :" + nodes.size());
                 contextMap.remove(var);
                 LinkedList<Node> varValue = new LinkedList<>();
                 //varValue.add(node);
                 varValue.add(nodes.get(k));
                 contextMap.put(var, varValue);
-                //if (i == 0) System.out.println("THIS LINE BEGIN");
                 FLWRHelper(ctx, i + 1, result);
-                //if (i == 0) System.out.println("THIS LINE END");
             }
         } else {
             HashMap<String, LinkedList<Node>> oldContextMap = new HashMap<>(contextMap);
@@ -710,24 +693,15 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         int numVar = ctx.Var().size();
         if (i < numVar) {
             String var = ctx.Var(i).getText();
-//            System.out.println("forClause Var : " + var);
             LinkedList<Node> nodes = visit(ctx.xq(i));
-            //if (i == 0) System.out.println("Nodes size :" + nodes.size());
-            //if (i == 1) System.out.println("2rd level node size:" + nodes.size());
             for (int k = 0; k < nodes.size(); k++) {
-                //for (Node node : nodes) {
-                // System.out.println("Nodes size :" + nodes.size());
                 contextMap.remove(var);
                 LinkedList<Node> varValue = new LinkedList<>();
-                //varValue.add(node);
                 varValue.add(nodes.get(k));
                 contextMap.put(var, varValue);
-                //if (i == 0) System.out.println("THIS LINE BEGIN");
                 satisfyHelper(ctx, i + 1, result);
-                //if (i == 0) System.out.println("THIS LINE END");
             }
         } else {
-            //System.out.println(cnt++);
             HashMap<String, LinkedList<Node>> oldContextMap = new HashMap<>(contextMap);
             LinkedList<Node> partResult = visit(ctx.cond());
             if (partResult != null) {
