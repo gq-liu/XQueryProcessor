@@ -104,7 +104,7 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
     public LinkedList<Node> visitXqFLWR(XQUERYParser.XqFLWRContext ctx) {
         LinkedList<Node> result = new LinkedList<>();
         HashMap<String, LinkedList<Node>> tempVariableMap = new HashMap<>(variableMap);
-        FLWRHelper(ctx, 0, result);
+        traversal(ctx, 0, result);
         variableMap = tempVariableMap;
         return result;
     }
@@ -163,34 +163,20 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         return result;
     }
 
-    // need check
     @Override
     public LinkedList<Node> visitCondIs(XQUERYParser.CondIsContext ctx) {
-        LinkedList<Node> contextTemp = context;
-        LinkedList<Node> result = new LinkedList<Node>();
-        for (Node node : contextTemp) {
-            LinkedList<Node> temp = new LinkedList<Node>();
-            temp.add(node);
-            // find left;
-            context = temp;
-            LinkedList<Node> left = visit(ctx.xq(0));
-            context = temp;
-            LinkedList<Node> right = visit(ctx.xq(1));
-            boolean hasFound = false;
-            for (Node leftNode : left) {
-                for (Node rightNode : right) {
-                    if (leftNode.isSameNode(rightNode)) {
-                        hasFound = true;
-                        break;
-                    }
+        LinkedList<Node> result = new LinkedList<>();
+        LinkedList<Node> left = visit(ctx.xq(0));
+        LinkedList<Node> right = visit(ctx.xq(1));
+        if (left == null || right == null || left.isEmpty() || right.isEmpty()) { return result; }
+        for (Node leftNode : left) {
+            for (Node rightNode : right) {
+                if (leftNode.isSameNode(rightNode)) {
+                    result.add(leftNode);
+                    break;
                 }
-                if (hasFound) { break; }
-            }
-            if (hasFound && !result.contains(node)) {
-                result.add(node);
             }
         }
-        context = result;
         return result;
     }
 
@@ -652,7 +638,7 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
     }
 
 
-    private void FLWRHelper(XQUERYParser.XqFLWRContext ctx, int i, LinkedList<Node> result) {
+    private void traversal(XQUERYParser.XqFLWRContext ctx, int i, LinkedList<Node> result) {
         int numVar = ctx.forClause().Var().size();
         if (i < numVar) {
             String var = ctx.forClause().Var(i).getText();
@@ -664,7 +650,7 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
                 //varValue.add(node);
                 varValue.add(nodes.get(k));
                 variableMap.put(var, varValue);
-                FLWRHelper(ctx, i + 1, result);
+                traversal(ctx, i + 1, result);
             }
         } else {
             HashMap<String, LinkedList<Node>> oldContextMap = new HashMap<>(variableMap);

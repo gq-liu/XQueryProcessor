@@ -16,9 +16,8 @@ public class XQueryProcessor {
     public static void main(String[] args) throws Exception {
 
 
-        //String XPath = args[0];
-        String inputPath = "./testFiles/test21.txt";
-        String resultPath = "./result.xml";
+        String inputPath = args[0];
+        //String inputPath = "./testFiles/test21.txt";
         //InputStream XPathStream = new ByteArrayInputStream(XPath.getBytes(StandardCharsets.UTF_8));
         InputStream inputStream = new FileInputStream(inputPath);
         ANTLRInputStream input = new ANTLRInputStream(inputStream);
