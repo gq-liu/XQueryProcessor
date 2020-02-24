@@ -27,6 +27,7 @@ public class XPathParser {
         CustomerVisitor customerVisitor = new CustomerVisitor();
         LinkedList<Node> result = customerVisitor.visit(parseTree);
         if (result == null) { throw new Exception("Invalid XPath Expression!"); }
+        System.out.println("Result Size:" + result.size());
         for (Node node : result) {
             if (node != null) printNode(node, "");
         }
