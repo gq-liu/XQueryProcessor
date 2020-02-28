@@ -172,16 +172,26 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         return result;
     }
 
+//    @Override
+//    public LinkedList<Node> visitCondSatisfy(XQUERYParser.CondSatisfyContext ctx) {
+//        HashMap<String, LinkedList<Node>> tempVariableMap = new HashMap<>(variableMap);
+//        int varNum = ctx.Var().size();
+//        for (int i = 0; i < varNum; i++) {
+//            String varName = ctx.Var(i).getText();
+//            LinkedList<Node> varNodes = visit(ctx.xq(i));
+//            variableMap.put(varName, varNodes);
+//        }
+//        LinkedList<Node> result = visit(ctx.cond());
+//        variableMap = tempVariableMap;
+//        return result;
+//    }
+
+
     @Override
     public LinkedList<Node> visitCondSatisfy(XQUERYParser.CondSatisfyContext ctx) {
+        LinkedList<Node> result = new LinkedList<>();
         HashMap<String, LinkedList<Node>> tempVariableMap = new HashMap<>(variableMap);
-        int varNum = ctx.Var().size();
-        for (int i = 0; i < varNum; i++) {
-            String varName = ctx.Var(i).getText();
-            LinkedList<Node> varNodes = visit(ctx.xq(i));
-            variableMap.put(varName, varNodes);
-        }
-        LinkedList<Node> result = visit(ctx.cond());
+        condStatisfyHelper(ctx, 0, result);
         variableMap = tempVariableMap;
         return result;
     }
@@ -593,14 +603,16 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
             String var = ctx.forClause().Var(i).getText();
             LinkedList<Node> nodes = visit(ctx.forClause().xq(i));
             for (int k = 0; k < nodes.size(); k++) {
+                HashMap<String, LinkedList<Node>> oldContextMap = new HashMap<>(variableMap);
                 variableMap.remove(var);
                 LinkedList<Node> varValue = new LinkedList<>();
                 varValue.add(nodes.get(k));
                 variableMap.put(var, varValue);
                 traversal(ctx, i + 1, result);
+                variableMap = oldContextMap;
             }
         } else {
-            HashMap<String, LinkedList<Node>> oldContextMap = new HashMap<>(variableMap);
+            // HashMap<String, LinkedList<Node>> oldContextMap = new HashMap<>(variableMap);
             if (ctx.letClause() != null) {
                 visit(ctx.letClause());
             }
@@ -613,10 +625,32 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
             if (partResult != null) {
                 result.addAll(partResult);
             }
-            variableMap = oldContextMap;
+            // variableMap = oldContextMap;
         }
     }
 
+    private void condStatisfyHelper(XQUERYParser.CondSatisfyContext ctx, int i, LinkedList<Node> result) {
+        int numVar = ctx.Var().size();
+        if (i < numVar) {
+            String var = ctx.Var(i).getText();
+            LinkedList<Node> nodes = visit(ctx.xq(i));
+            for (int k = 0; k < nodes.size(); k++) {
+                HashMap<String, LinkedList<Node>> oldContextMap = new HashMap<>(variableMap);
+                variableMap.remove(var);
+                LinkedList<Node> varValue = new LinkedList<>();
+                varValue.add(nodes.get(k));
+                variableMap.put(var, varValue);
+                condStatisfyHelper(ctx, i + 1, result);
+                variableMap = oldContextMap;
+                if (!result.isEmpty()) { break; }
+            }
+        } else {
+            LinkedList<Node> partResult = visit(ctx.cond());
+            if (partResult != null) {
+                result.addAll(partResult);
+            }
+        }
+    }
     private Node makeNode(String tagName, LinkedList<Node> subNodes) {
         Node node = inputDoc.createElement(tagName);
         for (Node curr : subNodes) {
