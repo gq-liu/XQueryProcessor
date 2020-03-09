@@ -19,9 +19,9 @@ public class XQueryProcessorOPT {
         //String inputPath = "./testFiles/test21.txt";
         InputStream inputStream = new FileInputStream(inputPath);
         // optimization
-        // InputStream streamOPT = XQueryOptimizer.optimize(inputStream);
+        InputStream inputStreamOPT = XQueryOptimizer.optimize(inputStream);
         // execute XQuery
-        ANTLRInputStream input = new ANTLRInputStream(inputStream);
+        ANTLRInputStream input = new ANTLRInputStream(inputStreamOPT);
         XQUERYLexer xqueryLexer = new XQUERYLexer(input);
 
         CommonTokenStream commonTokenStream = new CommonTokenStream(xqueryLexer);
