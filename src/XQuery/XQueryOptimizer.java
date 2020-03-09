@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,7 +42,7 @@ class VarTreeNode {
     }
 }
 public class XQueryOptimizer {
-    public static void optimize(InputStream in) throws IOException {
+    public static InputStream optimize(InputStream in) throws IOException {
         // read in the XQuery text & get the xq context
         ANTLRInputStream input = new ANTLRInputStream(in);
         XQUERYLexer xqueryLexer = new XQUERYLexer(input);
@@ -84,6 +85,7 @@ public class XQueryOptimizer {
         // output reformed XQuery
         String reformedXQuery = forWhereClause + returnClause;
         System.out.println(reformedXQuery);
+        return new ByteArrayInputStream(reformedXQuery.getBytes());
     }
 
     private static void analysisForClause(Map<String, String> valueMap, Map<String, VarTreeNode> forest, XQUERYParser.ForClauseContext forClauseContext) {
