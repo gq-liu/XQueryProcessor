@@ -8,8 +8,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 
 public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
     private Document inputDoc = null;
@@ -17,6 +16,127 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
     private LinkedList<Node> context = new LinkedList<>();
 
     /* XQuery Visitor */
+    // add by Guoqiang Liu @ Mar 8 2020
+
+
+    @Override
+    public LinkedList<Node> visitXqJoin(XQUERYParser.XqJoinContext ctx) {
+        return visit(ctx.joinClause());
+    }
+
+    private static void printNode(Node node, String tab) {
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            System.out.print(tab + "<" + node.getNodeName().toUpperCase() + ">");
+            NamedNodeMap nodeMap = node.getAttributes();
+            if (nodeMap != null && nodeMap.getLength() != 0) {
+                for (int i = 0; i < nodeMap.getLength(); i++) {
+                    printNode(nodeMap.item(i), tab + "  ");
+                }
+            }
+            NodeList nodeList = node.getChildNodes();
+            if (nodeList != null) {
+                if (nodeList.getLength() == 1 && nodeList.item(0).getNodeType() == Node.TEXT_NODE) {
+                    System.out.print(node.getTextContent());
+                    System.out.print("</" + node.getNodeName().toUpperCase() + ">");
+                } else {
+                    for (int i = 0; i < nodeList.getLength(); i++) {
+                        System.out.println();
+                        printNode(nodeList.item(i), tab + "  ");
+                    }
+                    System.out.println();
+                    System.out.print(tab + "</" + node.getNodeName().toUpperCase() + ">");
+                }
+            }
+
+
+        } else if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+            //System.out.println(tab + "<@" + node.getNodeName() + "=" + node.getNodeValue() + ">");
+        } else if (node.getNodeType() == Node.TEXT_NODE) {
+            System.out.println(tab + node.getTextContent());
+        } else if (node.getNodeType() == Node.DOCUMENT_NODE) {
+            System.out.println("DOCUMENT_NODE");
+        }
+    }
+
+
+    @Override
+    public LinkedList<Node> visitJoinClause(XQUERYParser.JoinClauseContext ctx) {
+        LinkedList<Node> oldContext = new LinkedList<>(context);
+        Map<Key, LinkedList<Node>> map = new HashMap<>();
+        LinkedList<Node> left = visit(ctx.xq(0));
+        context = oldContext;
+        LinkedList<Node> right = visit(ctx.xq(1));
+        context = oldContext;
+
+        LinkedList<String> leftKeys = new LinkedList<>();
+        LinkedList<String> rightKeys = new LinkedList<>();
+        LinkedList<Node> result = new LinkedList<>();
+        // get keys list
+        for (int i = 0; i < ctx.joinKeys(0).ID().size(); i++) {
+            leftKeys.add(ctx.joinKeys(0).ID(i).getText());
+            rightKeys.add(ctx.joinKeys(1).ID(i).getText());
+        }
+        System.out.println(leftKeys);
+        System.out.println(rightKeys);
+
+        for (Node leftNode : left) {
+            Key key = generateKey(leftNode, leftKeys);
+            if (key != null) {
+                if (!map.containsKey(key)) {
+                    map.put(key, new LinkedList<Node>());
+                }
+                map.get(key).add(leftNode);
+            }
+        }
+        for (Key key : map.keySet()) {
+            System.out.println("RIGHT");
+            System.out.println("KEY BEGIN:" + key.toString() + "KEY END");
+        }
+        System.out.println(map.toString());
+
+        for (Node rightTuple : right) {
+            Key key = generateKey(rightTuple, rightKeys);
+            System.out.println("LEFT");
+            System.out.println("KEY BEGIN:" + key.toString() + "KEY END");
+            if (map.containsKey(key)) {
+                System.out.println(key);
+                LinkedList<Node> nodeList = map.get(key);
+                for (Node leftTuple : nodeList) {
+                    result.add(mergeNode(leftTuple, rightTuple));
+                }
+            }
+        }
+        System.out.println(result.size());
+        return result;
+    }
+    private Key generateKey(Node node, LinkedList<String> keyVar) {
+        Key key = new Key();
+        NodeList children = node.getChildNodes();
+        for(String var : keyVar) {
+            for (int i = 0; i < children.getLength(); i++) {
+                if (children.item(i).getNodeType() == Node.ELEMENT_NODE
+                        && children.item(i).getNodeName().equals(var)) {
+                    NodeList nodeList = children.item(i).getChildNodes();
+                    for (int j = 0; j < nodeList.getLength(); j++) {
+                        key.addNode(nodeList.item(j));
+                    }
+                    break;
+                }
+            }
+        }
+        return key;
+    }
+
+    private Node mergeNode(Node leftTuple, Node rightTuple) {
+        NodeList right = rightTuple.getChildNodes();
+        for (int i = 0; i < right.getLength(); i++) {
+            Node curElement = right.item(i);
+            Node newNode = leftTuple.getOwnerDocument().importNode(curElement, true);
+            leftTuple.appendChild(newNode);
+        }
+        return leftTuple;
+    }
+
     @Override
     public LinkedList<Node> visitXqTag(XQUERYParser.XqTagContext ctx) {
         LinkedList<Node> result = new LinkedList<>();

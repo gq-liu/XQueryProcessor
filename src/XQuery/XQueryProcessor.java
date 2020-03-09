@@ -29,10 +29,10 @@ public class XQueryProcessor {
         LinkedList<Node> result = myXqueryVisitor.visit(parseTree);
         if (result == null) { throw new Exception("Invalid XPath Expression!"); }
         System.out.println("result size: " + result.size());
-        for (Node node : result) {
-            if (node != null) printNode(node, "");
-            System.out.println();
-        }
+//        for (Node node : result) {
+//            if (node != null) printNode(node, "");
+//            System.out.println();
+//        }
     }
     private static void printNode(Node node, String tab) {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -60,7 +60,7 @@ public class XQueryProcessor {
 
 
         } else if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
-            System.out.println(tab + "<@" + node.getNodeName() + "=" + node.getNodeValue() + ">");
+            //System.out.println(tab + "<@" + node.getNodeName() + "=" + node.getNodeValue() + ">");
         } else if (node.getNodeType() == Node.TEXT_NODE) {
             System.out.println(tab + node.getTextContent());
         } else if (node.getNodeType() == Node.DOCUMENT_NODE) {

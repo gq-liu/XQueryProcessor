@@ -1,4 +1,4 @@
-package XQUERYgen;// Generated from /Users/liuguoqiang/Study/20win/cse232b/cse232bProject/src/XPathParser/XQUERY.g4 by ANTLR 4.7.2
+package XQUERYgen;// Generated from /Users/liuguoqiang/Study/20win/cse232b/cse232bProject/src/XQuery/XQUERY.g4 by ANTLR 4.7.2
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -23,6 +23,13 @@ public interface XQUERYVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitXqVar(XQUERYParser.XqVarContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code xqJoin}
+	 * labeled alternative in {@link XQUERYParser#xq}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitXqJoin(XQUERYParser.XqJoinContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code xqFLWR}
 	 * labeled alternative in {@link XQUERYParser#xq}.
@@ -103,6 +110,18 @@ public interface XQUERYVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitReturnClause(XQUERYParser.ReturnClauseContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link XQUERYParser#joinClause}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJoinClause(XQUERYParser.JoinClauseContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link XQUERYParser#joinKeys}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJoinKeys(XQUERYParser.JoinKeysContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code condEmpty}
 	 * labeled alternative in {@link XQUERYParser#cond}.

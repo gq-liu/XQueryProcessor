@@ -1,4 +1,4 @@
-package XQUERYgen;// Generated from /Users/liuguoqiang/Study/20win/cse232b/cse232bProject/src/XPathParser/XQUERY.g4 by ANTLR 4.7.2
+package XQUERYgen;// Generated from /Users/liuguoqiang/Study/20win/cse232b/cse232bProject/src/XQuery/XQUERY.g4 by ANTLR 4.7.2
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -30,6 +30,18 @@ public interface XQUERYListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitXqVar(XQUERYParser.XqVarContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code xqJoin}
+	 * labeled alternative in {@link XQUERYParser#xq}.
+	 * @param ctx the parse tree
+	 */
+	void enterXqJoin(XQUERYParser.XqJoinContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code xqJoin}
+	 * labeled alternative in {@link XQUERYParser#xq}.
+	 * @param ctx the parse tree
+	 */
+	void exitXqJoin(XQUERYParser.XqJoinContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code xqFLWR}
 	 * labeled alternative in {@link XQUERYParser#xq}.
@@ -166,6 +178,26 @@ public interface XQUERYListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitReturnClause(XQUERYParser.ReturnClauseContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link XQUERYParser#joinClause}.
+	 * @param ctx the parse tree
+	 */
+	void enterJoinClause(XQUERYParser.JoinClauseContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link XQUERYParser#joinClause}.
+	 * @param ctx the parse tree
+	 */
+	void exitJoinClause(XQUERYParser.JoinClauseContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link XQUERYParser#joinKeys}.
+	 * @param ctx the parse tree
+	 */
+	void enterJoinKeys(XQUERYParser.JoinKeysContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link XQUERYParser#joinKeys}.
+	 * @param ctx the parse tree
+	 */
+	void exitJoinKeys(XQUERYParser.JoinKeysContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code condEmpty}
 	 * labeled alternative in {@link XQUERYParser#cond}.
