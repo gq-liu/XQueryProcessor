@@ -167,6 +167,9 @@ public class XQueryOptimizer {
     private static String reformForWhere(Map<String, String> valueMap, Map<String, VarTreeNode> forest, Map<String, List<String>> joinPart, Map<String, String> tupleMap) {
         // separate join group
         List<List<String>> joinGroups = separateJoinGroup(joinPart);
+        Collections.reverse(joinGroups.get(0));
+        System.out.println(joinGroups);
+
         Set<String> seen = new HashSet<>();
         StringBuilder result = new StringBuilder();
         for (int k = 0; k < joinGroups.size(); k++) {
@@ -224,7 +227,7 @@ public class XQueryOptimizer {
                             .append("for " + forPart2 + "\n")
                             .append(filterPart2.length() == 0 ? "" : "where " + filterPart2.toString() + "\n")
                             .append(returnPart2 + ",\n")
-                            .append(getJoinCond(joinKWs) + "\n")
+                            .append(getJoinCond(joinKWs, false) + "\n")
                             .append(")");
                 } else if (forPart1 != null) {
                     partResult.insert(0, "join ( \n");
@@ -232,7 +235,7 @@ public class XQueryOptimizer {
                             .append("for " + forPart1 + '\n')
                             .append(filterPart1.length() == 0 ? "" : "where " + filterPart1.toString() + "\n")
                             .append(returnPart1 + ",\n")
-                            .append(getJoinCond(joinKWs) + "\n")
+                            .append(getJoinCond(joinKWs, true) + "\n")
                             .append(")\n");
                 } else if (forPart2 != null) {
                     partResult.insert(0, "join ( \n");
@@ -240,7 +243,7 @@ public class XQueryOptimizer {
                             .append("for " + forPart2 + "\n")
                             .append(filterPart2.length() == 0 ? "" : "where " + filterPart2.toString() + "\n")
                             .append(returnPart2 + ",\n")
-                            .append(getJoinCond(joinKWs) + "\n")
+                            .append(getJoinCond(joinKWs, false) + "\n")
                             .append(")\n");
                 } else {
                     // todo
@@ -276,7 +279,6 @@ public class XQueryOptimizer {
         List<List<String>> joinGroups = new ArrayList<>();
         Set<String> seen = new HashSet<>();
         List<String> joinTables = new ArrayList<>(joinPart.keySet());
-
         for (int i = 0; i < joinTables.size(); i++) {
             if (seen.contains(joinTables.get(i))) { continue; }
             List<String> group = new ArrayList<>();
@@ -296,7 +298,7 @@ public class XQueryOptimizer {
                     if (tables2.length > 1) { keys.add(tables2[1]); }
                     group.add(joinTables.get(j));
                     seen.add(joinTables.get(j));
-                    if (keys.size() > keysSizePrev) { j = start; }
+                    if (keys.size() > keysSizePrev) { j = start - 1; }
                 }
             }
             joinGroups.add(group);
@@ -349,7 +351,7 @@ public class XQueryOptimizer {
         return result.toString();
     }
 
-    private static String getJoinCond(List<String> joinKW) {
+    private static String getJoinCond(List<String> joinKW, boolean reverse) {
         StringBuilder part1 = new StringBuilder("[");
         StringBuilder part2 = new StringBuilder("[");
         for (String kw : joinKW) {
@@ -359,7 +361,7 @@ public class XQueryOptimizer {
         }
         part1.setCharAt(part1.length() - 1, ']');
         part2.setCharAt(part2.length() - 1, ']');
-        return part1.toString() + "," + part2.toString();
+        return reverse ? part2.toString() + "," + part1.toString() : part1.toString() + "," + part2.toString();
     }
 
     private static String reformReturn(XQUERYParser.ReturnClauseContext returnClauseContext, Map<String, String> tupleMap) {
