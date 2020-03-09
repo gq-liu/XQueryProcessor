@@ -24,41 +24,6 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         return visit(ctx.joinClause());
     }
 
-    private static void printNode(Node node, String tab) {
-        if (node.getNodeType() == Node.ELEMENT_NODE) {
-            System.out.print(tab + "<" + node.getNodeName().toUpperCase() + ">");
-            NamedNodeMap nodeMap = node.getAttributes();
-            if (nodeMap != null && nodeMap.getLength() != 0) {
-                for (int i = 0; i < nodeMap.getLength(); i++) {
-                    printNode(nodeMap.item(i), tab + "  ");
-                }
-            }
-            NodeList nodeList = node.getChildNodes();
-            if (nodeList != null) {
-                if (nodeList.getLength() == 1 && nodeList.item(0).getNodeType() == Node.TEXT_NODE) {
-                    System.out.print(node.getTextContent());
-                    System.out.print("</" + node.getNodeName().toUpperCase() + ">");
-                } else {
-                    for (int i = 0; i < nodeList.getLength(); i++) {
-                        System.out.println();
-                        printNode(nodeList.item(i), tab + "  ");
-                    }
-                    System.out.println();
-                    System.out.print(tab + "</" + node.getNodeName().toUpperCase() + ">");
-                }
-            }
-
-
-        } else if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
-            //System.out.println(tab + "<@" + node.getNodeName() + "=" + node.getNodeValue() + ">");
-        } else if (node.getNodeType() == Node.TEXT_NODE) {
-            System.out.println(tab + node.getTextContent());
-        } else if (node.getNodeType() == Node.DOCUMENT_NODE) {
-            System.out.println("DOCUMENT_NODE");
-        }
-    }
-
-
     @Override
     public LinkedList<Node> visitJoinClause(XQUERYParser.JoinClauseContext ctx) {
         LinkedList<Node> oldContext = new LinkedList<>(context);
@@ -76,8 +41,6 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
             leftKeys.add(ctx.joinKeys(0).ID(i).getText());
             rightKeys.add(ctx.joinKeys(1).ID(i).getText());
         }
-        System.out.println(leftKeys);
-        System.out.println(rightKeys);
 
         for (Node leftNode : left) {
             Key key = generateKey(leftNode, leftKeys);
@@ -88,16 +51,9 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
                 map.get(key).add(leftNode);
             }
         }
-        for (Key key : map.keySet()) {
-            System.out.println("RIGHT");
-            System.out.println("KEY BEGIN:" + key.toString() + "KEY END");
-        }
-        System.out.println(map.toString());
 
         for (Node rightTuple : right) {
             Key key = generateKey(rightTuple, rightKeys);
-            System.out.println("LEFT");
-            System.out.println("KEY BEGIN:" + key.toString() + "KEY END");
             if (map.containsKey(key)) {
                 System.out.println(key);
                 LinkedList<Node> nodeList = map.get(key);
@@ -109,10 +65,10 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         System.out.println(result.size());
         return result;
     }
-    private Key generateKey(Node node, LinkedList<String> keyVar) {
+    private Key generateKey(Node node, LinkedList<String> attriList) {
         Key key = new Key();
         NodeList children = node.getChildNodes();
-        for(String var : keyVar) {
+        for(String var : attriList) {
             for (int i = 0; i < children.getLength(); i++) {
                 if (children.item(i).getNodeType() == Node.ELEMENT_NODE
                         && children.item(i).getNodeName().equals(var)) {
