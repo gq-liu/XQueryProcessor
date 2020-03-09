@@ -206,30 +206,41 @@ public class XQueryOptimizer {
     }
 
     private static List<List<String>> separateJoinGroup(Map<String, List<String>> joinPart) {
-        // separate several join groups
         List<List<String>> joinGroups = new ArrayList<>();
-        for (String joinTables : joinPart.keySet()) {
-            String[] tables = joinTables.split("&");
-            if (tables.length == 1) { continue; }
-            boolean findGroup = false;
-            for (List<String> group : joinGroups) {
-                for (String tablePair : group) {
-                    if (tablePair.startsWith(tables[0]) || tablePair.endsWith(tables[0])
-                            || tablePair.startsWith(tables[1]) || tablePair.endsWith(tables[1])) {
-                        group.add(joinTables);
-                        findGroup = true;
-                        break;
-                    }
+        Set<String> seen = new HashSet<>();
+        List<String> joinTables = new ArrayList<>(joinPart.keySet());
+
+        for (int i = 0; i < joinTables.size(); i++) {
+            if (seen.contains(joinTables.get(i))) { continue; }
+            List<String> group = new ArrayList<>();
+            group.add(joinTables.get(i));
+            seen.add(joinTables.get(i));
+            String[] tables = joinTables.get(i).split("&");
+            Set<String> keys = new HashSet<>();
+            keys.add(tables[0]);
+            if (tables.length == 2) { keys.add(tables[1]); }
+            int start = i + 1;
+            for (int j = start; j < joinTables.size(); j++) {
+                if (seen.contains(joinTables.get(j))) { continue; }
+                if (shareTable(keys, joinTables.get(j))) {
+                    int keysSizePrev = keys.size();
+                    String[] tables2 = joinTables.get(j).split("&");
+                    keys.add(tables2[0]);
+                    if (tables2.length > 1) { keys.add(tables2[1]); }
+                    group.add(joinTables.get(j));
+                    seen.add(joinTables.get(j));
+                    if (keys.size() > keysSizePrev) { j = start; }
                 }
-                if (findGroup) { break; }
             }
-            if (!findGroup) {
-                List<String> list = new ArrayList<>();
-                list.add(joinTables);
-                joinGroups.add(list);
-            }
+            joinGroups.add(group);
         }
+        System.out.println(joinGroups.toString());
         return joinGroups;
+    }
+
+    private static boolean shareTable(Set<String> keys, String joinTables) {
+        String[] tables = joinTables.split("&");
+        return keys.contains(tables[0]) || (tables.length > 1 && keys.contains(tables[1]));
     }
 
 
