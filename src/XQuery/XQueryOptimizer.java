@@ -3,9 +3,7 @@ import XQUERYgen.XQUERYParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -31,7 +29,6 @@ import java.util.*;
  *             |   Cond ’and’ Cond
  *      Constant ::= StringLiteral
  * Then optimize the XQuery and return the reorganized XQuery which contains "join" key word.
- * The XQuery Optimizer has
  */
 class VarTreeNode {
     String var;
@@ -69,18 +66,19 @@ public class XQueryOptimizer {
         Map<String, VarTreeNode> forest = new HashMap<>();
         Map<String, List<String>> joinPart = new HashMap<>();
         Map<String, String> tupleMap = new HashMap<>();
+        Set<String> setOfTextNode = new HashSet<>();
 
         // analyse for clause
-        analysisForClause(valueMap, forest, forClauseContext);
+        analysisForClause(valueMap, forest, forClauseContext, setOfTextNode);
 
         // analysis where clause
         analysisWhereClause(forest, joinPart, whereClauseContext.cond());
 
         // rewrite for & where clause
-        String forWhereClause = reformForWhere(valueMap, forest, joinPart, tupleMap);
+        String forWhereClause = reformForWhere(valueMap, forest, joinPart, tupleMap, setOfTextNode);
 
         // rewrite return clause
-        String returnClause = reformReturn(returnClauseContext, tupleMap);
+        String returnClause = reformReturn(returnClauseContext, tupleMap, setOfTextNode);
 
         // output reformed XQuery
         String reformedXQuery = forWhereClause + returnClause;
@@ -88,11 +86,12 @@ public class XQueryOptimizer {
         return new ByteArrayInputStream(reformedXQuery.getBytes());
     }
 
-    private static void analysisForClause(Map<String, String> valueMap, Map<String, VarTreeNode> forest, XQUERYParser.ForClauseContext forClauseContext) {
+    private static void analysisForClause(Map<String, String> valueMap, Map<String, VarTreeNode> forest, XQUERYParser.ForClauseContext forClauseContext, Set<String> listOfTextNode) {
         int varNum = forClauseContext.Var().size();
         for (int i = 0; i < varNum; i++) {
             String var = forClauseContext.Var(i).getText();
             String xq = forClauseContext.xq(i).getText();
+            if (xq.toLowerCase().endsWith("text()") || xq.toLowerCase().endsWith("text(),")) { listOfTextNode.add(var); }
             if (xq.startsWith("$")) {
                 int indexOfSlash = xq.indexOf("/");
                 String parent =  indexOfSlash == -1 ? xq : xq.substring(0, indexOfSlash);
@@ -166,14 +165,14 @@ public class XQueryOptimizer {
         return false;
     }
 
-    private static String reformForWhere(Map<String, String> valueMap, Map<String, VarTreeNode> forest, Map<String, List<String>> joinPart, Map<String, String> tupleMap) {
+    private static String reformForWhere(Map<String, String> valueMap, Map<String, VarTreeNode> forest, Map<String, List<String>> joinPart, Map<String, String> tupleMap, Set<String> setOfTextNode) {
         // separate join group
         List<List<String>> joinGroups = separateJoinGroup(joinPart);
         Collections.reverse(joinGroups.get(0));
-        System.out.println(joinGroups);
 
         Set<String> seen = new HashSet<>();
         StringBuilder result = new StringBuilder();
+        StringBuilder whereClause = new StringBuilder();
         for (int k = 0; k < joinGroups.size(); k++) {
 
             List<String> group = joinGroups.get(k);
@@ -182,7 +181,6 @@ public class XQueryOptimizer {
 
             for (String joinTables : group) {
                 List<String> joinKWs = joinPart.get(joinTables);
-//                System.out.println(joinTables);
                 String[] tables = joinTables.split("&");
                 if (tables.length == 1) {
                     continue;
@@ -248,7 +246,7 @@ public class XQueryOptimizer {
                             .append(getJoinCond(joinKWs, false) + "\n")
                             .append(")\n");
                 } else {
-                    // todo
+                    whereClause.append(getWhereCond(joinKWs, tuple, setOfTextNode) + " and ");
                 }
             }
             partResult.insert(0, "$" + tuple + " in ");
@@ -257,13 +255,13 @@ public class XQueryOptimizer {
         result.insert(0, "for ");
         result.delete(result.length() - 2, result.length());
 
+        whereClause.insert(0, "where ");
+
         // append for clause that need not to be joined
-        StringBuilder whereClause = new StringBuilder();
         for (String root : forest.keySet()) {
             if (!seen.contains(root)) {
                 List<String> varibleList = getVaribleList(forest.get(root));
                 if (joinPart.containsKey(root)) {
-                    whereClause.append(joinPart.get(root).get(0));
                     for (int i = 0; i < joinPart.get(root).size(); i++) {
                         whereClause.append(joinPart.get(root).get(i) + " and ");
                     }
@@ -272,9 +270,30 @@ public class XQueryOptimizer {
             }
         }
         if (whereClause.length() != 0) {
-            result.append(whereClause.substring(0, whereClause.length() - 5));
+            result.append(whereClause.substring(0, whereClause.length() - 5) + "\n");
         }
         return result.toString();
+    }
+
+    private static String getWhereCond(List<String> joinKW, String tuple, Set<String> setOfTextNode) {
+        StringBuilder sb = new StringBuilder();
+        for (String kw : joinKW) {
+            String[] kws = kw.split("=");
+            String var1 = null;
+            String var2 = null;
+            if (setOfTextNode.contains(kws[0])) {
+                var1 = "$" + tuple + "/" + kws[0].substring(1) + "/text()";
+            } else {
+                var1 = "$" + tuple + "/" + kws[0].substring(1) + "/*";
+            }
+            if (setOfTextNode.contains(kws[1])) {
+                var2 = "$" + tuple + "/" + kws[1].substring(1) + "/text()";
+            } else {
+                var2 = "$" + tuple + "/" + kws[1].substring(1) + "/*";
+            }
+            sb.append(var1 + "=" + var2 + " and ");
+        }
+        return sb.substring(0, sb.length() - 5);
     }
 
     private static List<List<String>> separateJoinGroup(Map<String, List<String>> joinPart) {
@@ -366,12 +385,16 @@ public class XQueryOptimizer {
         return reverse ? part2.toString() + "," + part1.toString() : part1.toString() + "," + part2.toString();
     }
 
-    private static String reformReturn(XQUERYParser.ReturnClauseContext returnClauseContext, Map<String, String> tupleMap) {
+    private static String reformReturn(XQUERYParser.ReturnClauseContext returnClauseContext, Map<String, String> tupleMap, Set<String> listOfTextNode) {
         Set<String> varToReplace = new HashSet<>();
         String returnClause = returnClauseContext.getText();
         findVarToReplace(returnClauseContext.getChild(1), varToReplace);
         for (String var : varToReplace) {
-            returnClause = returnClause.replaceAll("\\$" + var,   "\\$" + tupleMap.get(var) + "/" + var + "/*");
+            if (listOfTextNode.contains("$" + var)) {
+                returnClause = returnClause.replaceAll("\\$" + var,   "\\$" + tupleMap.get(var) + "/" + var + "/text()");
+            } else {
+                returnClause = returnClause.replaceAll("\\$" + var,   "\\$" + tupleMap.get(var) + "/" + var + "/*");
+            }
         }
         return returnClause;
     }
@@ -382,29 +405,5 @@ public class XQueryOptimizer {
         for (int i = 0; i < root.getChildCount(); i++) {
             findVarToReplace(root.getChild(i), varToReplace);
         }
-    }
-
-//    private static void printNode(VarTreeNode root) {
-//        Queue<VarTreeNode> queue = new LinkedList<>();
-//        queue.offer(root);
-//        while (!queue.isEmpty()) {
-//            int size = queue.size();
-//            while (size > 0) {
-//                size--;
-//                VarTreeNode node = queue.poll();
-////                System.out.print(node.var + " ");
-//                for (VarTreeNode child : node.children) {
-//                    queue.offer(child);
-//                }
-//            }
-////            System.out.println();
-//        }
-//    }
-
-    public static void main(String[] args) throws Exception {
-        String inputPath = args[0];
-        //String inputPath = "./testFiles/test21.txt";
-        InputStream inputStream = new FileInputStream(inputPath);
-        optimize(inputStream);
     }
 }
