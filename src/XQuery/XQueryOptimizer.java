@@ -255,8 +255,6 @@ public class XQueryOptimizer {
         result.insert(0, "for ");
         result.delete(result.length() - 2, result.length());
 
-        whereClause.insert(0, "where ");
-
         // append for clause that need not to be joined
         for (String root : forest.keySet()) {
             if (!seen.contains(root)) {
@@ -270,6 +268,7 @@ public class XQueryOptimizer {
             }
         }
         if (whereClause.length() != 0) {
+            whereClause.insert(0, "where ");
             result.append(whereClause.substring(0, whereClause.length() - 5) + "\n");
         }
         return result.toString();
