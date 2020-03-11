@@ -14,3 +14,7 @@ java -jar XPathProcessor.jar "doc(\"j_caesar.xml\")//ACT[(./TITLE)==(./TITLE)]/*
     java -jar XQueryProcessor.jar [your file path]
 3. Example   
     java -jar XQueryProcessor.jar ./testFiles/test1.txt
+
+## Milestone 3
+1. Description  
+    Implemented a XQueryProcess with Optimizer to detect join and rewriter the XQuery.
