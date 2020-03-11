@@ -34,7 +34,7 @@ public class Key {
     public int hashCode() {
         StringBuilder sb = new StringBuilder();
         for(Node node : nodes){
-            sb.append(node.getFirstChild().getTextContent());
+            if (node.getFirstChild() != null ) { sb.append(node.getFirstChild().getTextContent()); }
         }
         return sb.toString().hashCode();
     }
