@@ -55,14 +55,12 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
         for (Node rightTuple : right) {
             Key key = generateKey(rightTuple, rightKeys);
             if (map.containsKey(key)) {
-                System.out.println(key);
                 LinkedList<Node> nodeList = map.get(key);
                 for (Node leftTuple : nodeList) {
                     result.add(mergeNode(leftTuple, rightTuple));
                 }
             }
         }
-        System.out.println(result.size());
         return result;
     }
     private Key generateKey(Node node, LinkedList<String> attriList) {
@@ -84,13 +82,21 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
     }
 
     private Node mergeNode(Node leftTuple, Node rightTuple) {
+        NodeList left = leftTuple.getChildNodes();
         NodeList right = rightTuple.getChildNodes();
+        Node result = inputDoc.createElement(leftTuple.getNodeName());
+        for (int i = 0; i < left.getLength(); i++) {
+            Node curElement = left.item(i);
+            Node newNode = inputDoc.importNode(curElement, true);
+            result.appendChild(newNode);
+        }
+
         for (int i = 0; i < right.getLength(); i++) {
             Node curElement = right.item(i);
-            Node newNode = leftTuple.getOwnerDocument().importNode(curElement, true);
-            leftTuple.appendChild(newNode);
+            Node newNode = inputDoc.importNode(curElement, true);
+            result.appendChild(newNode);
         }
-        return leftTuple;
+        return result;
     }
 
     @Override
@@ -480,7 +486,14 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
 
     @Override
     public LinkedList<Node> visitRpSelf(XQUERYParser.RpSelfContext ctx) {
-        return context;
+        LinkedList<Node> result = new LinkedList<>();
+        for (Node node : context) {
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                result.add(node);
+            }
+        }
+        context = result;
+        return result;
     }
 
     @Override
