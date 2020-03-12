@@ -168,7 +168,6 @@ public class XQueryOptimizer {
     private static String reformForWhere(Map<String, String> valueMap, Map<String, VarTreeNode> forest, Map<String, List<String>> joinPart, Map<String, String> tupleMap, Set<String> setOfTextNode) {
         // separate join group
         List<List<String>> joinGroups = separateJoinGroup(joinPart);
-        Collections.reverse(joinGroups.get(0));
 
         Set<String> seen = new HashSet<>();
         StringBuilder result = new StringBuilder();
