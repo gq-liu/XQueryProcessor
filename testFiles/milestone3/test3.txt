@@ -7,4 +7,4 @@ $spb in $sb//SPEAKER,
 $spea in $sa//SPEECH,
 $speb in $sb//SPEECH
 where $spa="FLAVIUS" and $spb="FLAVIUS" and $sa eq $sb and $spea eq $speb
-return <result>{ <title>{$sa/TITLE/text()}</title>, <speaker>{$spa/*}</speaker> }</result>
+return <result>{<title>{$sa/TITLE/text()}</title>,<speaker>{$spa/*}</speaker>}</result>
