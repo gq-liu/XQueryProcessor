@@ -248,8 +248,11 @@ public class XQueryOptimizer {
                     whereClause.append(getWhereCond(joinKWs, tuple, setOfTextNode) + " and ");
                 }
             }
-            partResult.insert(0, "$" + tuple + " in ");
-            result.append(partResult + ",\n");
+            if (partResult.length() != 0) {
+                partResult.insert(0, "$" + tuple + " in ");
+                result.append(partResult + ",\n");
+            }
+
         }
         result.insert(0, "for ");
         result.delete(result.length() - 2, result.length());
@@ -263,7 +266,7 @@ public class XQueryOptimizer {
                         whereClause.append(joinPart.get(root).get(i) + " and ");
                     }
                 }
-                result.append(formInnerForClause(valueMap, varibleList));
+                result.append("," + formInnerForClause(valueMap, varibleList) + "\n");
             }
         }
         if (whereClause.length() != 0) {
@@ -388,6 +391,7 @@ public class XQueryOptimizer {
         String returnClause = returnClauseContext.getText();
         findVarToReplace(returnClauseContext.getChild(1), varToReplace);
         for (String var : varToReplace) {
+            if (tupleMap.get(var) == null) { continue; }
             if (listOfTextNode.contains("$" + var)) {
                 returnClause = returnClause.replaceAll("\\$" + var,   "\\$" + tupleMap.get(var) + "/" + var + "/text()");
             } else {
