@@ -1,18 +1,26 @@
 for $a in doc("j_caesar_simple.xml")//ACT,
 $b in doc("j_caesar_simple.xml")//ACT,
 $c in doc("j_caesar_simple.xml")//ACT,
-$d in doc("j_caesar_simple.xml")//ACT,
+$e in doc("j_caesar_simple.xml")//ACT,
+$f in doc("j_caesar_simple.xml")//ACT,
+$g in doc("j_caesar_simple.xml")//ACT,
 $sa in $a//SCENE,
 $sb in $b//SCENE,
 $sc in $c//SCENE,
-$sd in $d//SCENE,
+$se in $e//SCENE,
+$sf in $f//SCENE,
+$sg in $g//SCENE,
 $spa in $sa//SPEAKER,
 $spb in $sb//SPEAKER/text(),
 $spc in $sc//SPEAKER,
-$spd in $sd//SPEAKER/text(),
+$spe in $se//SPEAKER,
+$spf in $sf//SPEAKER,
+$spg in $sg//SPEAKER,
 $spea in $sa//SPEECH,
 $speb in $sb//SPEECH,
 $spec in $sc//SPEECH,
-$sped in $sd//SPEECH
-where $spd = "First Commoner" and $sa eq $sb and $sb eq $sc
-return <result>{$sd/TITLE/text()}</result>
+$spee in $se//SPEECH,
+$spef in $sf//SPEECH,
+$speg in $sg//SPEECH
+where $sa eq $sc and $spb = "FLAVIUS" and $spe eq $spg and $spee ea $spef and $spe eq $spa and $spa eq $spg and $spec eq $spea
+return <result>{$sb/TITLE/text()}</result>
