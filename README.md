@@ -15,6 +15,15 @@ java -jar XPathProcessor.jar "doc(\"j_caesar.xml\")//ACT[(./TITLE)==(./TITLE)]/*
 3. Example   
     java -jar XQueryProcessor.jar ./testFiles/test1.txt
 
-## Milestone 3
+## Milestone 3  
 1. Description  
-    Implemented a XQueryProcess with Optimizer to detect join and rewriter the XQuery.
+    Implemented a XQueryProcessor with Optimizer to detect join and rewriter the XQuery.
+
+## Milestone 4  
+1. Description  
+    Add join plan options that "-B" represent bushy join and "-L" represent left deep join.
+2. How to run  
+    java -jar XQueryProcessorM4.jar <XQuertFilePath> -B/-L  
+3. Example  
+    java -jar XQueryProcessorM4.jar ./testFiles/milestone3/test10.txt -L  
+    java -jar XQueryProcessorM4.jar ./testFiles/milestone3/test10.txt -B
