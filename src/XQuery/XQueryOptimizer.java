@@ -3,9 +3,8 @@ import XQUERYgen.XQUERYParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.util.*;
 
 /**
@@ -54,7 +53,7 @@ class JoinTreeNode {
     }
 }
 public class XQueryOptimizer {
-    public static InputStream optimize(InputStream in, String joinBias) throws IOException {
+    public static InputStream optimize(InputStream in, String joinBias, String outputXQueryPath) throws IOException {
         // read in the XQuery text & get the xq context
         ANTLRInputStream input = new ANTLRInputStream(in);
         XQUERYLexer xqueryLexer = new XQUERYLexer(input);
@@ -97,7 +96,22 @@ public class XQueryOptimizer {
 
         // output reformed XQuery
         String reformedXQuery = forWhereClause + returnClause;
-        System.out.println(reformedXQuery);
+
+        // output the reformed XQuery to File
+        try {
+            File file = new File(outputXQueryPath);
+            if (!file.exists()) {	//文件不存在则创建文件，先创建目录
+                File dir = new File(file.getParent());
+                dir.mkdirs();
+                file.createNewFile();
+            }
+            FileWriter fileWriter = new FileWriter(file);
+            fileWriter.write(reformedXQuery);
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return new ByteArrayInputStream(reformedXQuery.getBytes());
     }
 
@@ -541,7 +555,7 @@ public class XQueryOptimizer {
             dp.put(joinTables, node);
         }
 
-        for (int i = 1; i <= (int) Math.pow(2, joinGroup.size()); i++) {
+        for (int i = 2; i < (int) Math.pow(2, joinGroup.size()); i++) {
             List<String> S = new ArrayList<>();
             int j = 1;
             int temp = (int) Math.floor(i / Math.pow(2, j - 1));
