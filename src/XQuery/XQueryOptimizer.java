@@ -607,7 +607,8 @@ public class XQueryOptimizer {
                 if (joinInfo.containsKey(key1)) {
                     isConnected = true;
                     joinCond.addAll(joinInfo.get(key1));
-                } else if (joinInfo.containsKey(key2)) {
+                }
+                if (joinInfo.containsKey(key2)) {
                     isConnected = true;
                     List<String> tempConds = joinInfo.get(key2);
                     for (String tempCond : tempConds) {
