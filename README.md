@@ -23,7 +23,7 @@ java -jar XPathProcessor.jar "doc(\"j_caesar.xml\")//ACT[(./TITLE)==(./TITLE)]/*
 1. Description  
     Add join plan options that "-B" represent bushy join and "-L" represent left deep join.
 2. How to run  
-    java -jar XQueryProcessorM4.jar <XQuertFilePath> -B/-L  
+    java -jar XQueryProcessorM4.jar XQuertFilePath -B/-L  
 3. Example  
     java -jar XQueryProcessorM4.jar ./testFiles/milestone3/test10.txt -L  
     java -jar XQueryProcessorM4.jar ./testFiles/milestone3/test10.txt -B
