@@ -178,115 +178,176 @@ public class XQueryOptimizer {
         return false;
     }
 
+    private static String joinTreeRewriter(String tuple, JoinTreeNode root, Map<String, String> valueMap,  Map<String, VarTreeNode> forest, Map<String, List<String>> joinPart, Map<String, String> tupleMap) {
+
+        if (root.left == null && root.right == null) {
+            StringBuilder result = new StringBuilder();
+            String table = new ArrayList<>(root.joinedTables).get(0);
+            List<String> varibleList = getVaribleList(forest.get(table));
+            buildTupleVarMap(varibleList, tuple, tupleMap);
+            String forPart = formInnerForClause(valueMap, varibleList);
+            StringBuilder filterPartSB = new StringBuilder();
+            if (joinPart.containsKey(table)) {
+                filterPartSB.append(joinPart.get(table).get(0));
+                for (int i = 1; i < joinPart.get(table).size(); i++) {
+                    filterPartSB.append(" and " + joinPart.get(table).get(i));
+                }
+            }
+            String filterPart = filterPartSB.toString();
+            String returnPart = formInnerReturnClause(varibleList, tuple);
+            result.append("for " + forPart + "\n")
+                    .append(filterPart.length() == 0 ? "" : "where " + filterPart.toString() + "\n")
+                    .append(returnPart + "\n");
+            return result.toString();
+        }
+        StringBuilder res = new StringBuilder("join ( \n");
+        String left = joinTreeRewriter(tuple, root.left, valueMap, forest, joinPart, tupleMap);
+        String right = joinTreeRewriter(tuple, root.right, valueMap, forest, joinPart, tupleMap);
+        res.append(left + ",\n")
+                .append(right + ",\n")
+                .append(getJoinCond(root.joinConditions, false) + "\n")
+                .append(")\n");
+        return res.toString();
+    }
+
     private static String reformForWhere(Map<String, String> valueMap, Map<String, VarTreeNode> forest, Map<String, List<String>> joinPart, Map<String, String> tupleMap, Set<String> setOfTextNode) {
         // separate join group
         List<List<String>> joinGroups = separateJoinGroup(joinPart);
-
-        Set<String> seen = new HashSet<>();
-        StringBuilder result = new StringBuilder();
+        List<JoinTreeNode> joinTreeNodes = generateJoinPlan(joinPart, "B");
+        StringBuilder res = new StringBuilder();
         StringBuilder whereClause = new StringBuilder();
-        for (int k = 0; k < joinGroups.size(); k++) {
-
-            List<String> group = joinGroups.get(k);
+        System.out.println(joinTreeNodes.size());
+        for (int k = 0; k < joinTreeNodes.size(); k++) {
             String tuple = "tuple" + k;
-            StringBuilder partResult = new StringBuilder();
-
-            for (String joinTables : group) {
-                List<String> joinKWs = joinPart.get(joinTables);
-                String[] tables = joinTables.split("&");
-                if (tables.length == 1) {
-                    continue;
-                }
-
-                String forPart1 = null;
-                String forPart2 = null;
-                StringBuilder filterPart1 = new StringBuilder();
-                StringBuilder filterPart2 = new StringBuilder();
-                String returnPart1 = null;
-                String returnPart2 = null;
-
-                if (!seen.contains(tables[0])) {
-                    seen.add(tables[0]);
-                    List<String> varibleList = getVaribleList(forest.get(tables[0]));
-                    buildTupleVarMap(varibleList, tuple, tupleMap);
-                    forPart1 = formInnerForClause(valueMap, varibleList);
-                    if (joinPart.containsKey(tables[0])) {
-                        filterPart1.append(joinPart.get(tables[0]).get(0));
-                        for (int i = 1; i < joinPart.get(tables[0]).size(); i++) {
-                            filterPart1.append(" and " + joinPart.get(tables[0]).get(i));
-                        }
-                    }
-                    returnPart1 = formInnerReturnClause(varibleList, tuple);
-                }
-                if (!seen.contains(tables[1])) {
-                    seen.add(tables[1]);
-                    List<String> varibleList = getVaribleList(forest.get(tables[1]));
-                    buildTupleVarMap(varibleList, tuple, tupleMap);
-                    forPart2 = formInnerForClause(valueMap, varibleList);
-                    if (joinPart.containsKey(tables[1])) {
-                        filterPart2.append(joinPart.get(tables[1]).get(0));
-                        for (int i = 1; i < joinPart.get(tables[1]).size(); i++) {
-                            filterPart2.append(" and " + joinPart.get(tables[1]).get(i));
-                        }
-                    }
-                    returnPart2 = formInnerReturnClause(varibleList, tuple);
-                }
-                if (forPart1 != null && forPart2 != null) {
-                    partResult.append("join ( \n")
-                            .append("for " + forPart1 + "\n")
-                            .append(filterPart1.length() == 0 ? "" : "where " + filterPart1.toString() + "\n")
-                            .append(returnPart1 + ",\n")
-                            .append("for " + forPart2 + "\n")
-                            .append(filterPart2.length() == 0 ? "" : "where " + filterPart2.toString() + "\n")
-                            .append(returnPart2 + ",\n")
-                            .append(getJoinCond(joinKWs, false) + "\n")
-                            .append(")");
-                } else if (forPart1 != null) {
-                    partResult.insert(0, "join ( \n");
-                    partResult.append(", \n")
-                            .append("for " + forPart1 + '\n')
-                            .append(filterPart1.length() == 0 ? "" : "where " + filterPart1.toString() + "\n")
-                            .append(returnPart1 + ",\n")
-                            .append(getJoinCond(joinKWs, true) + "\n")
-                            .append(")\n");
-                } else if (forPart2 != null) {
-                    partResult.insert(0, "join ( \n");
-                    partResult.append(", \n")
-                            .append("for " + forPart2 + "\n")
-                            .append(filterPart2.length() == 0 ? "" : "where " + filterPart2.toString() + "\n")
-                            .append(returnPart2 + ",\n")
-                            .append(getJoinCond(joinKWs, false) + "\n")
-                            .append(")\n");
-                } else {
-                    whereClause.append(getWhereCond(joinKWs, tuple, setOfTextNode) + " and ");
-                }
-            }
-            if (partResult.length() != 0) {
-                partResult.insert(0, "$" + tuple + " in ");
-                result.append(partResult + ",\n");
-            }
-
-        }
-        result.insert(0, "for ");
-        result.delete(result.length() - 2, result.length());
-
-        // append for clause that need not to be joined
-        for (String root : forest.keySet()) {
-            if (!seen.contains(root)) {
-                List<String> varibleList = getVaribleList(forest.get(root));
-                if (joinPart.containsKey(root)) {
-                    for (int i = 0; i < joinPart.get(root).size(); i++) {
-                        whereClause.append(joinPart.get(root).get(i) + " and ");
+            System.out.println(joinTreeNodes.get(0) == null);
+            JoinTreeNode node = joinTreeNodes.get(k);
+            if (node.left != null && node.right != null) {
+                String partResult = joinTreeRewriter(tuple, node, valueMap, forest, joinPart, tupleMap);
+                res.append("$" + tuple + " in " + partResult + ",\n");
+            } else if (node.left == null && node.right == null) {
+                String table = new ArrayList<>(node.joinedTables).get(0);
+                List<String> varibleList = getVaribleList(forest.get(table));
+                if (joinPart.containsKey(table)) {
+                    for (int i = 0; i < joinPart.get(table).size(); i++) {
+                        whereClause.append(joinPart.get(table).get(i) + " and ");
                     }
                 }
-                result.append("," + formInnerForClause(valueMap, varibleList) + "\n");
+                res.append(formInnerForClause(valueMap, varibleList) + ",\n");
             }
         }
+        res.insert(0, "for ");
+        res.delete(res.length() - 2, res.length());
         if (whereClause.length() != 0) {
             whereClause.insert(0, "where ");
-            result.append(whereClause.substring(0, whereClause.length() - 5) + "\n");
+            res.append(whereClause.substring(0, whereClause.length() - 5) + "\n");
         }
-        return result.toString();
+        return res.toString();
+
+//        Set<String> seen = new HashSet<>();
+//        StringBuilder result = new StringBuilder();
+//        StringBuilder whereClause = new StringBuilder();
+//        for (int k = 0; k < joinGroups.size(); k++) {
+//
+//            List<String> group = joinGroups.get(k);
+//            String tuple = "tuple" + k;
+//            StringBuilder partResult = new StringBuilder();
+//
+//            for (String joinTables : group) {
+//                List<String> joinKWs = joinPart.get(joinTables);
+//                String[] tables = joinTables.split("&");
+//                if (tables.length == 1) {
+//                    continue;
+//                }
+//
+//                String forPart1 = null;
+//                String forPart2 = null;
+//                StringBuilder filterPart1 = new StringBuilder();
+//                StringBuilder filterPart2 = new StringBuilder();
+//                String returnPart1 = null;
+//                String returnPart2 = null;
+//
+//                if (!seen.contains(tables[0])) {
+//                    seen.add(tables[0]);
+//                    List<String> varibleList = getVaribleList(forest.get(tables[0]));
+//                    buildTupleVarMap(varibleList, tuple, tupleMap);
+//                    forPart1 = formInnerForClause(valueMap, varibleList);
+//                    if (joinPart.containsKey(tables[0])) {
+//                        filterPart1.append(joinPart.get(tables[0]).get(0));
+//                        for (int i = 1; i < joinPart.get(tables[0]).size(); i++) {
+//                            filterPart1.append(" and " + joinPart.get(tables[0]).get(i));
+//                        }
+//                    }
+//                    returnPart1 = formInnerReturnClause(varibleList, tuple);
+//                }
+//                if (!seen.contains(tables[1])) {
+//                    seen.add(tables[1]);
+//                    List<String> varibleList = getVaribleList(forest.get(tables[1]));
+//                    buildTupleVarMap(varibleList, tuple, tupleMap);
+//                    forPart2 = formInnerForClause(valueMap, varibleList);
+//                    if (joinPart.containsKey(tables[1])) {
+//                        filterPart2.append(joinPart.get(tables[1]).get(0));
+//                        for (int i = 1; i < joinPart.get(tables[1]).size(); i++) {
+//                            filterPart2.append(" and " + joinPart.get(tables[1]).get(i));
+//                        }
+//                    }
+//                    returnPart2 = formInnerReturnClause(varibleList, tuple);
+//                }
+//                if (forPart1 != null && forPart2 != null) {
+//                    partResult.append("join ( \n")
+//                            .append("for " + forPart1 + "\n")
+//                            .append(filterPart1.length() == 0 ? "" : "where " + filterPart1.toString() + "\n")
+//                            .append(returnPart1 + ",\n")
+//                            .append("for " + forPart2 + "\n")
+//                            .append(filterPart2.length() == 0 ? "" : "where " + filterPart2.toString() + "\n")
+//                            .append(returnPart2 + ",\n")
+//                            .append(getJoinCond(joinKWs, false) + "\n")
+//                            .append(")");
+//                } else if (forPart1 != null) {
+//                    partResult.insert(0, "join ( \n");
+//                    partResult.append(", \n")
+//                            .append("for " + forPart1 + '\n')
+//                            .append(filterPart1.length() == 0 ? "" : "where " + filterPart1.toString() + "\n")
+//                            .append(returnPart1 + ",\n")
+//                            .append(getJoinCond(joinKWs, true) + "\n")
+//                            .append(")\n");
+//                } else if (forPart2 != null) {
+//                    partResult.insert(0, "join ( \n");
+//                    partResult.append(", \n")
+//                            .append("for " + forPart2 + "\n")
+//                            .append(filterPart2.length() == 0 ? "" : "where " + filterPart2.toString() + "\n")
+//                            .append(returnPart2 + ",\n")
+//                            .append(getJoinCond(joinKWs, false) + "\n")
+//                            .append(")\n");
+//                } else {
+//                    whereClause.append(getWhereCond(joinKWs, tuple, setOfTextNode) + " and ");
+//                }
+//            }
+//            if (partResult.length() != 0) {
+//                partResult.insert(0, "$" + tuple + " in ");
+//                result.append(partResult + ",\n");
+//            }
+//
+//        }
+//        result.insert(0, "for ");
+//        result.delete(result.length() - 2, result.length());
+//
+//        // append for clause that need not to be joined
+//        for (String root : forest.keySet()) {
+//            if (!seen.contains(root)) {
+//                List<String> varibleList = getVaribleList(forest.get(root));
+//                if (joinPart.containsKey(root)) {
+//                    for (int i = 0; i < joinPart.get(root).size(); i++) {
+//                        whereClause.append(joinPart.get(root).get(i) + " and ");
+//                    }
+//                }
+//                result.append("," + formInnerForClause(valueMap, varibleList) + "\n");
+//            }
+//        }
+//        if (whereClause.length() != 0) {
+//            whereClause.insert(0, "where ");
+//            result.append(whereClause.substring(0, whereClause.length() - 5) + "\n");
+//        }
+//        return result.toString();
     }
 
     private static String getWhereCond(List<String> joinKW, String tuple, Set<String> setOfTextNode) {
@@ -424,24 +485,24 @@ public class XQueryOptimizer {
 
     // milestone 4
 
-    private static JoinTreeNode generateJoinPlan(Map<String, List<String>> joinPart, String joinBias) {
+    private static List<JoinTreeNode> generateJoinPlan(Map<String, List<String>> joinPart, String joinBias) {
         // generate join groups
         List<List<String>> joinGroups = separateJoinGroup(joinPart);
-        JoinTreeNode joinTree = null;
+        List<JoinTreeNode> joinTrees = null;
         if (joinBias.equals("L")) {
-            joinTree =  generateLeftJoinPlan(joinPart, joinGroups);
+            joinTrees =  generateLeftJoinPlan(joinPart, joinGroups);
         }
         if (joinBias.equals("B")) {
-            joinTree = generateBushyJoinPlan(joinPart, joinGroups);
+            joinTrees = generateBushyJoinPlan(joinPart, joinGroups);
         }
-        return joinTree;
+        return joinTrees;
     }
 
-    private static JoinTreeNode generateLeftJoinPlan(Map<String, List<String>> joinPart, List<List<String>> joinGroups) {
+    private static List<JoinTreeNode> generateLeftJoinPlan(Map<String, List<String>> joinPart, List<List<String>> joinGroups) {
         return null;
     }
 
-    private static JoinTreeNode generateBushyJoinPlan(Map<String, List<String>> joinInfo, List<List<String>> joinGroupsTemp) {
+    private static List<JoinTreeNode> generateBushyJoinPlan(Map<String, List<String>> joinInfo, List<List<String>> joinGroupsTemp) {
         // generate join group
         List<List<String>> joinGroups = new ArrayList<>();
         for (List<String> items : joinGroupsTemp) {
@@ -449,33 +510,21 @@ public class XQueryOptimizer {
             Set<String> seen = new HashSet<>();
             for (String item : items) {
                 String[] tables = item.split("&");
-                if (tables.length != 2) {
-                    continue;
-                }
                 seen.add(tables[0]);
-                seen.add(tables[1]);
+                if (tables.length == 2) { seen.add(tables[1]); }
             }
             List<String> group = new ArrayList<>(seen);
             joinGroups.add(group);
         }
-
         // for each join group, generate bushy tree
-        if (joinGroups.isEmpty()) { return new JoinTreeNode(new HashSet<String>(), new ArrayList<String>(), 0); }
+        if (joinGroups.isEmpty()) { return new ArrayList<>(); }
         List<JoinTreeNode> joinTreeNodes = new ArrayList<>();
         for (List<String> joinGroup : joinGroups) {
             JoinTreeNode joinTreeNode = generateBushyTree(joinGroup, joinInfo);
             joinTreeNodes.add(joinTreeNode);
         }
 
-        // join each connected component
-        JoinTreeNode root = joinTreeNodes.get(0);
-        for (int i = 1; i < joinTreeNodes.size(); i++) {
-            Set<String> total = new HashSet<>();
-            total.addAll(root.joinedTables);
-            total.addAll(joinTreeNodes.get(i).joinedTables);
-            root = createJoinTree(root, joinTreeNodes.get(i), total, new ArrayList<String>());
-        }
-        return root;
+        return joinTreeNodes;
     }
 
     private static JoinTreeNode generateBushyTree(List<String> joinGroup, Map<String, List<String>> joinInfo) {
@@ -497,11 +546,11 @@ public class XQueryOptimizer {
         for (int i = 1; i <= (int) Math.pow(2, joinGroup.size()); i++) {
             List<String> S = new ArrayList<>();
             int j = 1;
-            int temp = (int)Math.floor(i / Math.pow(2, j - 1));
-            while (temp > 0) {
-                if (temp % 2 == 1) { S.add(joinGroup.get(j)); }
+            int temp = (int) Math.floor(i / Math.pow(2, j - 1));
+            while (temp > 0 && j <= joinGroup.size()) {
+                if (temp % 2 == 1) { S.add(joinGroup.get(j - 1)); }
                 j++;
-                temp = (int)Math.floor(i / Math.pow(2, j - 1));
+                temp = (int) Math.floor(i / Math.pow(2, j - 1));
             }
             if (S.isEmpty()) { continue; }
             List<Set<String>> subsets = new ArrayList<>();
