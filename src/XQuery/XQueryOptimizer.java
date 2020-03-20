@@ -38,6 +38,19 @@ class VarTreeNode {
         this.children = new ArrayList<>();
     }
 }
+
+class JoinTreeNode {
+    Set<String> joinedTables;     // tables to be joined
+    List<String> joinConditions;  // join conditions of left and right subtree, left.attri = right.attri
+    JoinTreeNode left;            // left and right join subtree
+    JoinTreeNode right;
+    int height;
+    public JoinTreeNode(Set<String> joinedTables, List<String> joinConditions, int height) {
+        this.joinedTables = joinedTables;
+        this.joinConditions = joinConditions;
+        this.height = height;
+    }
+}
 public class XQueryOptimizer {
     public static InputStream optimize(InputStream in) throws IOException {
         // read in the XQuery text & get the xq context
@@ -407,5 +420,164 @@ public class XQueryOptimizer {
         for (int i = 0; i < root.getChildCount(); i++) {
             findVarToReplace(root.getChild(i), varToReplace);
         }
+    }
+
+    // milestone 4
+
+    private static JoinTreeNode generateJoinPlan(Map<String, List<String>> joinPart, String joinBias) {
+        // generate join groups
+        List<List<String>> joinGroups = separateJoinGroup(joinPart);
+        JoinTreeNode joinTree = null;
+        if (joinBias.equals("L")) {
+            joinTree =  generateLeftJoinPlan(joinPart, joinGroups);
+        }
+        if (joinBias.equals("B")) {
+            joinTree = generateBushyJoinPlan(joinPart, joinGroups);
+        }
+        return joinTree;
+    }
+
+    private static JoinTreeNode generateLeftJoinPlan(Map<String, List<String>> joinPart, List<List<String>> joinGroups) {
+        return null;
+    }
+
+    private static JoinTreeNode generateBushyJoinPlan(Map<String, List<String>> joinInfo, List<List<String>> joinGroupsTemp) {
+        // generate join group
+        List<List<String>> joinGroups = new ArrayList<>();
+        for (List<String> items : joinGroupsTemp) {
+            //List<String> group = new ArrayList<>();
+            Set<String> seen = new HashSet<>();
+            for (String item : items) {
+                String[] tables = item.split("&");
+                if (tables.length != 2) {
+                    continue;
+                }
+                seen.add(tables[0]);
+                seen.add(tables[1]);
+            }
+            List<String> group = new ArrayList<>(seen);
+            joinGroups.add(group);
+        }
+
+        // for each join group, generate bushy tree
+        if (joinGroups.isEmpty()) { return new JoinTreeNode(new HashSet<String>(), new ArrayList<String>(), 0); }
+        List<JoinTreeNode> joinTreeNodes = new ArrayList<>();
+        for (List<String> joinGroup : joinGroups) {
+            JoinTreeNode joinTreeNode = generateBushyTree(joinGroup, joinInfo);
+            joinTreeNodes.add(joinTreeNode);
+        }
+
+        // join each connected component
+        JoinTreeNode root = joinTreeNodes.get(0);
+        for (int i = 1; i < joinTreeNodes.size(); i++) {
+            Set<String> total = new HashSet<>();
+            total.addAll(root.joinedTables);
+            total.addAll(joinTreeNodes.get(i).joinedTables);
+            root = createJoinTree(root, joinTreeNodes.get(i), total, new ArrayList<String>());
+        }
+        return root;
+    }
+
+    private static JoinTreeNode generateBushyTree(List<String> joinGroup, Map<String, List<String>> joinInfo) {
+        // using dynamic programming to generate bushy tree
+        Map<Set<String>, JoinTreeNode> dp = new HashMap<>();
+        // base case
+        for (String table : joinGroup) {
+            Set<String> joinTables = new HashSet<>();
+            List<String> joinCond = new ArrayList<>();
+
+            joinTables.add(table);
+            if (joinInfo.containsKey(table)) {
+                joinCond.addAll(joinInfo.get(table));
+            }
+            JoinTreeNode node = new JoinTreeNode(new HashSet<String>(joinTables), joinCond, 1);
+            dp.put(joinTables, node);
+        }
+
+        for (int i = 1; i <= (int) Math.pow(2, joinGroup.size()); i++) {
+            List<String> S = new ArrayList<>();
+            int j = 1;
+            int temp = (int)Math.floor(i / Math.pow(2, j - 1));
+            while (temp > 0) {
+                if (temp % 2 == 1) { S.add(joinGroup.get(j)); }
+                j++;
+                temp = (int)Math.floor(i / Math.pow(2, j - 1));
+            }
+            if (S.isEmpty()) { continue; }
+            List<Set<String>> subsets = new ArrayList<>();
+            getSubsets(S, subsets, new ArrayList<String>(), 0);
+            for (Set<String> set1 : subsets) {
+                Set<String> set2 = getRest(set1, S);
+                if (!dp.containsKey(set1) || !dp.containsKey(set2)) { continue; }
+                JoinTreeNode left = dp.get(set1);
+                JoinTreeNode right = dp.get(set2);
+                List<String> joinCond = new ArrayList<>();
+                boolean isConnecte = isConnected(left, right, joinInfo, joinCond);
+                if (!isConnecte) { continue; }
+                Set<String> S_set = new HashSet<>(S);
+                JoinTreeNode root = createJoinTree(left, right, S_set, joinCond);
+                if (!dp.containsKey(S_set) || root.height < dp.get(S_set).height) {
+                    dp.put(S_set, root);
+                }
+            }
+        }
+        return dp.get(new HashSet<>(joinGroup));
+    }
+
+    private static void getSubsets(List<String> S, List<Set<String>> subsets, List<String> list, int pos) {
+        if (!list.isEmpty()) { subsets.add(new HashSet<>(list)); }
+        for (int i = pos; i < S.size(); i++) {
+            list.add(S.get(i));
+            getSubsets(S, subsets, list, i + 1);
+            list.remove(list.size() - 1);
+        }
+    }
+
+    private static Set<String> getRest(Set<String> set1, List<String> S) {
+        Set<String> result = new HashSet<>();
+        for (String s : S) {
+            if (!set1.contains(s)) { result.add(s); }
+        }
+        return result;
+    }
+
+    private static JoinTreeNode createJoinTree(JoinTreeNode left, JoinTreeNode right, Set<String> S_set, List<String> joinCond) {
+        JoinTreeNode root = new JoinTreeNode(S_set, joinCond, Math.max(left.height, right.height) + 1);
+        root.left = left;
+        root.right = right;
+        return root;
+    }
+
+    private static boolean isConnected(JoinTreeNode left, JoinTreeNode right, Map<String, List<String>> joinInfo, List<String> joinCond) {
+        boolean isConnected = false;
+        for (String leftTable : left.joinedTables) {
+            for (String rightTable : right.joinedTables) {
+                String key1 = leftTable + "&" + rightTable;
+                String key2 = rightTable + "&" + leftTable;
+                if (joinInfo.containsKey(key1)) {
+                    isConnected = true;
+                    joinCond.addAll(joinInfo.get(key1));
+                } else if (joinInfo.containsKey(key2)) {
+                    isConnected = true;
+                    List<String> tempConds = joinInfo.get(key2);
+                    for (String tempCond : tempConds) {
+                        String[] attri = tempCond.split("=");
+                        joinCond.add(attri[1] + "=" + attri[0]);
+                    }
+                }
+            }
+        }
+        return isConnected;
+    }
+
+    public static void main(String[] args) {
+        Map<String, List<String>> joinPart = new HashMap<>();
+        joinPart.put("1&2", new ArrayList<String>());
+        joinPart.put("3&4", new ArrayList<String>());
+        joinPart.put("2&5", new ArrayList<String>());
+        joinPart.put("2&6", new ArrayList<String>());
+        joinPart.put("2&7", new ArrayList<String>());
+        joinPart.put("3&8", new ArrayList<String>());
+        generateJoinPlan(joinPart, "L");
     }
 }
