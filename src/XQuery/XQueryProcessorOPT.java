@@ -15,7 +15,10 @@ public class XQueryProcessorOPT {
 
 
         String inputPath = args[0];
-        String joinBias = args[1];
+        String joinBias = args[1].toUpperCase();
+        if (args.length != 2 || !joinBias.equals("-B") && !joinBias.equals("B") && !joinBias.equals("-L") && !joinBias.equals("L")) {
+            throw new Exception("Invalid Arguments! Example: java -jar XQueryProcessor <filePath> -B/-L");
+        }
         //String inputPath = "./testFiles/test21.txt";
         InputStream inputStream = new FileInputStream(inputPath);
         // optimization
