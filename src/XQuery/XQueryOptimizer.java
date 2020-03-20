@@ -60,6 +60,21 @@ public class XQueryOptimizer {
         CommonTokenStream commonTokenStream = new CommonTokenStream(xqueryLexer);
         XQUERYParser xqueryParser = new XQUERYParser(commonTokenStream);
         XQUERYParser.XqContext xqContext = xqueryParser.xq();
+        File outputFile = null;
+        try {
+            outputFile = new File(outputXQueryPath);
+            if (outputFile.exists()) { outputFile.delete(); }
+            File dir = new File(outputFile.getParent());
+            dir.mkdirs();
+            outputFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // detect join, if XQuery has join, then return directly
+        if (xqContext.getChildCount() < 3 || xqContext.getText().toLowerCase().matches("join")) {
+            return null;
+        }
 
         // get the forClause, whereClause and returnClause context for later analysis
         XQUERYParser.ForClauseContext forClauseContext = (XQUERYParser.ForClauseContext) xqContext.getChild(0);
@@ -99,13 +114,7 @@ public class XQueryOptimizer {
 
         // output the reformed XQuery to File
         try {
-            File file = new File(outputXQueryPath);
-            if (!file.exists()) {
-                File dir = new File(file.getParent());
-                dir.mkdirs();
-                file.createNewFile();
-            }
-            FileWriter fileWriter = new FileWriter(file);
+            FileWriter fileWriter = new FileWriter(outputFile);
             fileWriter.write(reformedXQuery);
             fileWriter.flush();
             fileWriter.close();

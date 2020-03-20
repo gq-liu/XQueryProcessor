@@ -1,0 +1,15 @@
+for $q1 in doc("j_caesar_simple.xml")//ACT,
+$sa in $q1//SCENE,
+$spa in $sa//SPEAKER,
+$spb in $sa//SPEAKER/text(),
+$spea in $sa//SPEECH,
+$spec in $sa//SPEECH
+where $spb="FLAVIUS"
+return <tuple>{
+<q1>{$q1}</q1>,
+<sa>{$sa}</sa>,
+<spa>{$spa}</spa>,
+<spb>{$spb}</spb>,
+<spea>{$spea}</spea>,
+<spec>{$spec}</spec>
+}</tuple>

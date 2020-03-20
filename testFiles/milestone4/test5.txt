@@ -1,0 +1,13 @@
+for $a1 in doc("j_caesar_simple.xml")//ACT,
+$a2 in doc("j_caesar_simple.xml")//ACT,
+$sc1 in $a1//SCENE,
+$sc2 in $a2//SCENE,
+$sp1 in $sc1//SPEAKER,
+$sp2 in $sc2//SPEAKER
+where $a1 eq $a2 and $sc1 eq $sc2 and $sp1 eq $sp2
+return <result>{
+<speaker>{$sp1/text()}</speaker>,
+<scene>{$sc1/TITLE/text()}</scene>,
+<act1>{$a1/TITLE/text()}</act1>,
+<act2>{$a2/TITLE/text()}</act2>
+}</result>
