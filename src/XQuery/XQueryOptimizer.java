@@ -44,15 +44,17 @@ class JoinTreeNode {
     List<String> joinConditions;  // join conditions of left and right subtree, left.attri = right.attri
     JoinTreeNode left;            // left and right join subtree
     JoinTreeNode right;
+    int numOfCP;
     int height;
-    public JoinTreeNode(Set<String> joinedTables, List<String> joinConditions, int height) {
+    public JoinTreeNode(Set<String> joinedTables, List<String> joinConditions, int height, int numOfCP) {
         this.joinedTables = joinedTables;
         this.joinConditions = joinConditions;
         this.height = height;
+        this.numOfCP = numOfCP;
     }
 }
 public class XQueryOptimizer {
-    public static InputStream optimize(InputStream in) throws IOException {
+    public static InputStream optimize(InputStream in, String joinBias) throws IOException {
         // read in the XQuery text & get the xq context
         ANTLRInputStream input = new ANTLRInputStream(in);
         XQUERYLexer xqueryLexer = new XQUERYLexer(input);
@@ -88,7 +90,7 @@ public class XQueryOptimizer {
         analysisWhereClause(forest, joinPart, whereClauseContext.cond());
 
         // rewrite for & where clause
-        String forWhereClause = reformForWhere(valueMap, forest, joinPart, tupleMap, setOfTextNode);
+        String forWhereClause = reformForWhere(valueMap, forest, joinPart, tupleMap, joinBias);
 
         // rewrite return clause
         String returnClause = reformReturn(returnClauseContext, tupleMap, setOfTextNode);
@@ -203,45 +205,48 @@ public class XQueryOptimizer {
         StringBuilder res = new StringBuilder("join ( \n");
         String left = joinTreeRewriter(tuple, root.left, valueMap, forest, joinPart, tupleMap);
         String right = joinTreeRewriter(tuple, root.right, valueMap, forest, joinPart, tupleMap);
+        String joinCond = root.joinConditions.size() == 0 ? "[],[]" : getJoinCond(root.joinConditions,false);
         res.append(left + ",\n")
                 .append(right + ",\n")
-                .append(getJoinCond(root.joinConditions, false) + "\n")
+                .append(joinCond + "\n")
                 .append(")\n");
         return res.toString();
     }
 
-    private static String reformForWhere(Map<String, String> valueMap, Map<String, VarTreeNode> forest, Map<String, List<String>> joinPart, Map<String, String> tupleMap, Set<String> setOfTextNode) {
+    private static String reformForWhere(Map<String, String> valueMap, Map<String, VarTreeNode> forest, Map<String, List<String>> joinPart, Map<String, String> tupleMap, String joinBias) {
         // separate join group
-        List<List<String>> joinGroups = separateJoinGroup(joinPart);
-        List<JoinTreeNode> joinTreeNodes = generateJoinPlan(joinPart, "B");
-        StringBuilder res = new StringBuilder();
-        StringBuilder whereClause = new StringBuilder();
-        System.out.println(joinTreeNodes.size());
-        for (int k = 0; k < joinTreeNodes.size(); k++) {
-            String tuple = "tuple" + k;
-            System.out.println(joinTreeNodes.get(0) == null);
-            JoinTreeNode node = joinTreeNodes.get(k);
-            if (node.left != null && node.right != null) {
-                String partResult = joinTreeRewriter(tuple, node, valueMap, forest, joinPart, tupleMap);
-                res.append("$" + tuple + " in " + partResult + ",\n");
-            } else if (node.left == null && node.right == null) {
-                String table = new ArrayList<>(node.joinedTables).get(0);
-                List<String> varibleList = getVaribleList(forest.get(table));
-                if (joinPart.containsKey(table)) {
-                    for (int i = 0; i < joinPart.get(table).size(); i++) {
-                        whereClause.append(joinPart.get(table).get(i) + " and ");
-                    }
-                }
-                res.append(formInnerForClause(valueMap, varibleList) + ",\n");
-            }
-        }
-        res.insert(0, "for ");
-        res.delete(res.length() - 2, res.length());
-        if (whereClause.length() != 0) {
-            whereClause.insert(0, "where ");
-            res.append(whereClause.substring(0, whereClause.length() - 5) + "\n");
-        }
-        return res.toString();
+//        List<List<String>> joinGroups = separateJoinGroup(joinPart);
+        JoinTreeNode joinTree = generateJoinPlan(joinPart, joinBias);
+        StringBuilder result = new StringBuilder();
+        String tuple = "tuple";
+        String partResult = joinTreeRewriter(tuple, joinTree, valueMap, forest, joinPart, tupleMap);
+        result.append("for " + "$" + tuple + " in " + partResult + "\n");
+        return result.toString();
+//        for (int k = 0; k < joinTreeNodes.size(); k++) {
+//            String tuple = "tuple" + k;
+//            JoinTreeNode node = joinTreeNodes.get(k);
+//            if (node.left != null && node.right != null) {
+//                String partResult = joinTreeRewriter(tuple, node, valueMap, forest, joinPart, tupleMap);
+//                res.append("$" + tuple + " in " + partResult + ",\n");
+//            } else if (node.left == null && node.right == null) {
+//                String table = new ArrayList<>(node.joinedTables).get(0);
+//                List<String> varibleList = getVaribleList(forest.get(table));
+//                if (joinPart.containsKey(table)) {
+//                    for (int i = 0; i < joinPart.get(table).size(); i++) {
+//                        whereClause.append(joinPart.get(table).get(i) + " and ");
+//                    }
+//                }
+//                res.append(formInnerForClause(valueMap, varibleList) + ",\n");
+//            }
+//        }
+//        res.insert(0, "for ");
+//        res.delete(res.length() - 2, res.length());
+//        res.append("\n");
+//        if (whereClause.length() != 0) {
+//            whereClause.insert(0, "where ");
+//            res.append(whereClause.substring(0, whereClause.length() - 5) + "\n");
+//        }
+//        return res.toString();
 
 //        Set<String> seen = new HashSet<>();
 //        StringBuilder result = new StringBuilder();
@@ -350,57 +355,57 @@ public class XQueryOptimizer {
 //        return result.toString();
     }
 
-    private static String getWhereCond(List<String> joinKW, String tuple, Set<String> setOfTextNode) {
-        StringBuilder sb = new StringBuilder();
-        for (String kw : joinKW) {
-            String[] kws = kw.split("=");
-            String var1 = null;
-            String var2 = null;
-            if (setOfTextNode.contains(kws[0])) {
-                var1 = "$" + tuple + "/" + kws[0].substring(1) + "/text()";
-            } else {
-                var1 = "$" + tuple + "/" + kws[0].substring(1) + "/*";
-            }
-            if (setOfTextNode.contains(kws[1])) {
-                var2 = "$" + tuple + "/" + kws[1].substring(1) + "/text()";
-            } else {
-                var2 = "$" + tuple + "/" + kws[1].substring(1) + "/*";
-            }
-            sb.append(var1 + "=" + var2 + " and ");
-        }
-        return sb.substring(0, sb.length() - 5);
-    }
+//    private static String getWhereCond(List<String> joinKW, String tuple, Set<String> setOfTextNode) {
+//        StringBuilder sb = new StringBuilder();
+//        for (String kw : joinKW) {
+//            String[] kws = kw.split("=");
+//            String var1 = null;
+//            String var2 = null;
+//            if (setOfTextNode.contains(kws[0])) {
+//                var1 = "$" + tuple + "/" + kws[0].substring(1) + "/text()";
+//            } else {
+//                var1 = "$" + tuple + "/" + kws[0].substring(1) + "/*";
+//            }
+//            if (setOfTextNode.contains(kws[1])) {
+//                var2 = "$" + tuple + "/" + kws[1].substring(1) + "/text()";
+//            } else {
+//                var2 = "$" + tuple + "/" + kws[1].substring(1) + "/*";
+//            }
+//            sb.append(var1 + "=" + var2 + " and ");
+//        }
+//        return sb.substring(0, sb.length() - 5);
+//    }
 
-    private static List<List<String>> separateJoinGroup(Map<String, List<String>> joinPart) {
-        List<List<String>> joinGroups = new ArrayList<>();
-        Set<String> seen = new HashSet<>();
-        List<String> joinTables = new ArrayList<>(joinPart.keySet());
-        for (int i = 0; i < joinTables.size(); i++) {
-            if (seen.contains(joinTables.get(i))) { continue; }
-            List<String> group = new ArrayList<>();
-            group.add(joinTables.get(i));
-            seen.add(joinTables.get(i));
-            String[] tables = joinTables.get(i).split("&");
-            Set<String> keys = new HashSet<>();
-            keys.add(tables[0]);
-            if (tables.length == 2) { keys.add(tables[1]); }
-            int start = i + 1;
-            for (int j = start; j < joinTables.size(); j++) {
-                if (seen.contains(joinTables.get(j))) { continue; }
-                if (shareTable(keys, joinTables.get(j))) {
-                    int keysSizePrev = keys.size();
-                    String[] tables2 = joinTables.get(j).split("&");
-                    keys.add(tables2[0]);
-                    if (tables2.length > 1) { keys.add(tables2[1]); }
-                    group.add(joinTables.get(j));
-                    seen.add(joinTables.get(j));
-                    if (keys.size() > keysSizePrev) { j = start - 1; }
-                }
-            }
-            joinGroups.add(group);
-        }
-        return joinGroups;
-    }
+//    private static List<List<String>> separateJoinGroup(Map<String, List<String>> joinPart) {
+//        List<List<String>> joinGroups = new ArrayList<>();
+//        Set<String> seen = new HashSet<>();
+//        List<String> joinTables = new ArrayList<>(joinPart.keySet());
+//        for (int i = 0; i < joinTables.size(); i++) {
+//            if (seen.contains(joinTables.get(i))) { continue; }
+//            List<String> group = new ArrayList<>();
+//            group.add(joinTables.get(i));
+//            seen.add(joinTables.get(i));
+//            String[] tables = joinTables.get(i).split("&");
+//            Set<String> keys = new HashSet<>();
+//            keys.add(tables[0]);
+//            if (tables.length == 2) { keys.add(tables[1]); }
+//            int start = i + 1;
+//            for (int j = start; j < joinTables.size(); j++) {
+//                if (seen.contains(joinTables.get(j))) { continue; }
+//                if (shareTable(keys, joinTables.get(j))) {
+//                    int keysSizePrev = keys.size();
+//                    String[] tables2 = joinTables.get(j).split("&");
+//                    keys.add(tables2[0]);
+//                    if (tables2.length > 1) { keys.add(tables2[1]); }
+//                    group.add(joinTables.get(j));
+//                    seen.add(joinTables.get(j));
+//                    if (keys.size() > keysSizePrev) { j = start - 1; }
+//                }
+//            }
+//            joinGroups.add(group);
+//        }
+//        return joinGroups;
+//    }
 
     private static boolean shareTable(Set<String> keys, String joinTables) {
         String[] tables = joinTables.split("&");
@@ -485,49 +490,42 @@ public class XQueryOptimizer {
 
     // milestone 4
 
-    private static List<JoinTreeNode> generateJoinPlan(Map<String, List<String>> joinPart, String joinBias) {
-        // generate join groups
-        List<List<String>> joinGroups = separateJoinGroup(joinPart);
-        List<JoinTreeNode> joinTrees = null;
-        if (joinBias.equals("L")) {
-            joinTrees =  generateLeftJoinPlan(joinPart, joinGroups);
-        }
-        if (joinBias.equals("B")) {
-            joinTrees = generateBushyJoinPlan(joinPart, joinGroups);
-        }
-        return joinTrees;
-    }
-
-    private static List<JoinTreeNode> generateLeftJoinPlan(Map<String, List<String>> joinPart, List<List<String>> joinGroups) {
-        return null;
-    }
-
-    private static List<JoinTreeNode> generateBushyJoinPlan(Map<String, List<String>> joinInfo, List<List<String>> joinGroupsTemp) {
+    private static JoinTreeNode generateJoinPlan(Map<String, List<String>> joinInfo, String joinBias) {
         // generate join group
-        List<List<String>> joinGroups = new ArrayList<>();
-        for (List<String> items : joinGroupsTemp) {
-            //List<String> group = new ArrayList<>();
-            Set<String> seen = new HashSet<>();
-            for (String item : items) {
-                String[] tables = item.split("&");
-                seen.add(tables[0]);
-                if (tables.length == 2) { seen.add(tables[1]); }
-            }
-            List<String> group = new ArrayList<>(seen);
-            joinGroups.add(group);
+        Set<String> seen = new HashSet<>();
+        for (String key : joinInfo.keySet()) {
+            String[] tables = key.split("&");
+            seen.add(tables[0]);
+            if (tables.length == 2) { seen.add(tables[1]); }
         }
-        // for each join group, generate bushy tree
-        if (joinGroups.isEmpty()) { return new ArrayList<>(); }
-        List<JoinTreeNode> joinTreeNodes = new ArrayList<>();
-        for (List<String> joinGroup : joinGroups) {
-            JoinTreeNode joinTreeNode = generateBushyTree(joinGroup, joinInfo);
-            joinTreeNodes.add(joinTreeNode);
-        }
+        List<String> joinGroup = new ArrayList<>(seen);
 
-        return joinTreeNodes;
+        JoinTreeNode joinTree = null;
+        if (joinBias.equals("L") || joinBias.equals("-L") ) {
+            joinTree =  generateLeftJoinTree(joinInfo, joinGroup);
+        }
+        if (joinBias.equals("B") || joinBias.equals("-B") ) {
+            joinTree = generateBushyJoinTree(joinInfo, joinGroup);
+        }
+        return joinTree;
     }
 
-    private static JoinTreeNode generateBushyTree(List<String> joinGroup, Map<String, List<String>> joinInfo) {
+    private static JoinTreeNode generateLeftJoinTree(Map<String, List<String>> joinInfo, List<String> joinGroup) {
+        Set<String> table = new HashSet<>();
+        table.add(joinGroup.get(0));
+        JoinTreeNode left = new JoinTreeNode(table, new ArrayList<String>(), -1, -1);
+        for (int i = 1; i < joinGroup.size(); i++) {
+            Set<String> tableTemp = new HashSet<>();
+            tableTemp.add(joinGroup.get(i));
+            JoinTreeNode right = new JoinTreeNode(tableTemp, new ArrayList<String>(), -1, -1);
+            List<String> joinCond = new ArrayList<>();
+            isConnected(left, right, joinInfo, joinCond);
+            left = createJoinTree(left, right, new HashSet<>(joinGroup.subList(0, i + 1)), joinCond, -1);
+        }
+        return left;
+    }
+
+    private static JoinTreeNode generateBushyJoinTree(Map<String, List<String>> joinInfo, List<String> joinGroup) {
         // using dynamic programming to generate bushy tree
         Map<Set<String>, JoinTreeNode> dp = new HashMap<>();
         // base case
@@ -539,7 +537,7 @@ public class XQueryOptimizer {
             if (joinInfo.containsKey(table)) {
                 joinCond.addAll(joinInfo.get(table));
             }
-            JoinTreeNode node = new JoinTreeNode(new HashSet<String>(joinTables), joinCond, 1);
+            JoinTreeNode node = new JoinTreeNode(new HashSet<String>(joinTables), joinCond, 1, 0);
             dp.put(joinTables, node);
         }
 
@@ -562,10 +560,13 @@ public class XQueryOptimizer {
                 JoinTreeNode right = dp.get(set2);
                 List<String> joinCond = new ArrayList<>();
                 boolean isConnecte = isConnected(left, right, joinInfo, joinCond);
-                if (!isConnecte) { continue; }
+                // if (!isConnecte) { continue; }
                 Set<String> S_set = new HashSet<>(S);
-                JoinTreeNode root = createJoinTree(left, right, S_set, joinCond);
-                if (!dp.containsKey(S_set) || root.height < dp.get(S_set).height) {
+                int numOfCP = left.numOfCP + right.numOfCP;
+                if (!isConnecte) { numOfCP++; }
+                JoinTreeNode root = createJoinTree(left, right, S_set, joinCond, numOfCP);
+                if (!dp.containsKey(S_set) ||
+                        (root.height < dp.get(S_set).height && root.numOfCP <= dp.get(S_set).numOfCP)) {
                     dp.put(S_set, root);
                 }
             }
@@ -590,8 +591,8 @@ public class XQueryOptimizer {
         return result;
     }
 
-    private static JoinTreeNode createJoinTree(JoinTreeNode left, JoinTreeNode right, Set<String> S_set, List<String> joinCond) {
-        JoinTreeNode root = new JoinTreeNode(S_set, joinCond, Math.max(left.height, right.height) + 1);
+    private static JoinTreeNode createJoinTree(JoinTreeNode left, JoinTreeNode right, Set<String> S_set, List<String> joinCond, int numOfCP) {
+        JoinTreeNode root = new JoinTreeNode(S_set, joinCond, Math.max(left.height, right.height) + 1, numOfCP);
         root.left = left;
         root.right = right;
         return root;
@@ -617,16 +618,5 @@ public class XQueryOptimizer {
             }
         }
         return isConnected;
-    }
-
-    public static void main(String[] args) {
-        Map<String, List<String>> joinPart = new HashMap<>();
-        joinPart.put("1&2", new ArrayList<String>());
-        joinPart.put("3&4", new ArrayList<String>());
-        joinPart.put("2&5", new ArrayList<String>());
-        joinPart.put("2&6", new ArrayList<String>());
-        joinPart.put("2&7", new ArrayList<String>());
-        joinPart.put("3&8", new ArrayList<String>());
-        generateJoinPlan(joinPart, "L");
     }
 }

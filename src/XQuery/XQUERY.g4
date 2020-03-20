@@ -19,7 +19,7 @@ letClause : 'let' Var ':=' xq (',' Var ':=' xq)*;
 whereClause : 'where' cond;
 returnClause : 'return' xq;
 joinClause : 'join' '(' xq ',' xq ',' joinKeys ',' joinKeys')';
-joinKeys: '[' (ID ',')* ID ']';
+joinKeys: '[' ((ID ',')* ID)* ']';
 
 cond : xq EQUALS xq                                                 # condEq
      | xq IS xq                                                     # condIs

@@ -1,11 +1,10 @@
-import XQUERYgen.XQUERYLexer;
-import XQUERYgen.XQUERYParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import XQUERYgen.*;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -16,10 +15,11 @@ public class XQueryProcessorOPT {
 
 
         String inputPath = args[0];
+        String joinBias = args[1];
         //String inputPath = "./testFiles/test21.txt";
         InputStream inputStream = new FileInputStream(inputPath);
         // optimization
-        InputStream inputStreamOPT = XQueryOptimizer.optimize(inputStream);
+        InputStream inputStreamOPT = XQueryOptimizer.optimize(inputStream, joinBias);
         // execute XQuery
         ANTLRInputStream input = new ANTLRInputStream(inputStreamOPT);
         XQUERYLexer xqueryLexer = new XQUERYLexer(input);

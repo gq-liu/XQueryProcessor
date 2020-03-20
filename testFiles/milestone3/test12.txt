@@ -15,4 +15,4 @@ $speb in $sb//SPEECH,
 $spec in $sc//SPEECH,
 $sped in $sd//SPEECH
 where $spd = "First Commoner" and $sa eq $sb and $sb eq $sc
-return <result>{$sd/TITLE/text()}</result>2
+return <result>{$sd/TITLE/text()}</result>
