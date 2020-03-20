@@ -42,23 +42,37 @@ public class MyXqueryVisitor extends XQUERYBaseVisitor<LinkedList<Node>> {
             rightKeys.add(ctx.joinKeys(1).ID(i).getText());
         }
 
-        for (Node leftNode : left) {
-            Key key = generateKey(leftNode, leftKeys);
-            if (key != null) {
-                if (!map.containsKey(key)) {
-                    map.put(key, new LinkedList<Node>());
+        // if leftJoinKey or rightJoinKey is empty, then return Cartesian products
+        if (leftKeys.isEmpty() || rightKeys.isEmpty()) {
+            result = generateCartesianProducts(left, right);
+        } else {
+            for (Node leftNode : left) {
+                Key key = generateKey(leftNode, leftKeys);
+                if (key != null) {
+                    if (!map.containsKey(key)) {
+                        map.put(key, new LinkedList<Node>());
+                    }
+                    map.get(key).add(leftNode);
                 }
-                map.get(key).add(leftNode);
+            }
+            for (Node rightTuple : right) {
+                Key key = generateKey(rightTuple, rightKeys);
+                if (map.containsKey(key)) {
+                    LinkedList<Node> nodeList = map.get(key);
+                    for (Node leftTuple : nodeList) {
+                        result.add(mergeNode(leftTuple, rightTuple));
+                    }
+                }
             }
         }
+        return result;
+    }
 
-        for (Node rightTuple : right) {
-            Key key = generateKey(rightTuple, rightKeys);
-            if (map.containsKey(key)) {
-                LinkedList<Node> nodeList = map.get(key);
-                for (Node leftTuple : nodeList) {
-                    result.add(mergeNode(leftTuple, rightTuple));
-                }
+    private LinkedList<Node> generateCartesianProducts(LinkedList<Node> leftTuples, LinkedList<Node> rightTuples) {
+        LinkedList<Node> result = new LinkedList<>();
+        for (Node left : leftTuples) {
+            for (Node right : rightTuples) {
+                result.add(mergeNode(left, right));
             }
         }
         return result;
