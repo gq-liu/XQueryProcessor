@@ -1,0 +1,6 @@
+for $s in doc("j_caesar_simple.xml")//SPEAKER,
+$a in doc("j_caesar_simple.xml")//ACT,
+$sp in $a//SPEAKER,
+$stxt in $s/text()
+where $sp eq $s and $stxt = "CAESAR"
+return <act>{$a/TITLE/text()} </act>

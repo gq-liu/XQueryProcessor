@@ -36,6 +36,10 @@ public class XQueryProcessorOPT {
         InputStream inputStream = new FileInputStream(inputPath);
         // optimization
         InputStream inputStreamOPT = XQueryOptimizer.optimize(inputStream, joinBias, outputXQueryPath);
+        if (inputStreamOPT == null) {
+            System.out.println("Don't need rewrite!");
+            inputStreamOPT = new FileInputStream(inputPath);
+        }
         // execute XQuery
         ANTLRInputStream input = new ANTLRInputStream(inputStreamOPT);
         XQUERYLexer xqueryLexer = new XQUERYLexer(input);
@@ -48,20 +52,18 @@ public class XQueryProcessorOPT {
         MyXqueryVisitor myXqueryVisitor = new MyXqueryVisitor();
         LinkedList<Node> result = myXqueryVisitor.visit(parseTree);
 
+        File outputFile = new File(outputResultPath);
+        if (outputFile.exists()) { outputFile.delete(); }
+        File dir = new File(outputFile.getParent());
+        dir.mkdirs();
+        outputFile.createNewFile();
+
         // saving result to XML file
-        if (result.isEmpty()) {
+        if (result == null ||  result.isEmpty()) {
             System.out.println("Empty result!");
         } else {
             LinkedList<Node> finalResult = null;
             Document outputDoc = null;
-
-            File outputFile = new File(outputResultPath);
-            if (!outputFile.exists()) {	//文件不存在则创建文件，先创建目录
-                File dir = new File(outputFile.getParent());
-                dir.mkdirs();
-                outputFile.createNewFile();
-            }
-
             try {
                 DocumentBuilderFactory docBF = DocumentBuilderFactory.newInstance();
                 DocumentBuilder docB = docBF.newDocumentBuilder();
