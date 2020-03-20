@@ -371,7 +371,7 @@ public class XQueryOptimizer {
             if (joinInfo.containsKey(table)) {
                 joinCond.addAll(joinInfo.get(table));
             }
-            JoinTreeNode node = new JoinTreeNode(new HashSet<String>(joinTables), joinCond, 1, 0);
+            JoinTreeNode node = new JoinTreeNode(new HashSet<>(joinTables), joinCond, 1, 0);
             dp.put(joinTables, node);
         }
 
@@ -399,8 +399,11 @@ public class XQueryOptimizer {
                 int numOfCP = left.numOfCP + right.numOfCP;
                 if (!isConnecte) { numOfCP++; }
                 JoinTreeNode root = createJoinTree(left, right, S_set, joinCond, numOfCP);
-                if (!dp.containsKey(S_set) ||
-                        (root.height < dp.get(S_set).height && root.numOfCP <= dp.get(S_set).numOfCP)) {
+                if (!dp.containsKey(S_set)) {
+                    dp.put(S_set, root);
+                } else if (root.numOfCP < dp.get(S_set).numOfCP) {
+                    dp.put(S_set, root);
+                } else if (root.height < dp.get(S_set).height) {
                     dp.put(S_set, root);
                 }
             }
