@@ -75,7 +75,7 @@ public class XQueryProcessorOPT {
             }
             else{
                 System.out.println("result size: " + result.size());
-                finalResult = makeElem(outputDoc, "result", result);
+                finalResult = makeElem(outputDoc, "results", result);
             }
             writeToFile(outputDoc, finalResult, outputResultPath);
         }
