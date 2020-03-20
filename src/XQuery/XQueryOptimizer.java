@@ -100,7 +100,7 @@ public class XQueryOptimizer {
         // output the reformed XQuery to File
         try {
             File file = new File(outputXQueryPath);
-            if (!file.exists()) {	//文件不存在则创建文件，先创建目录
+            if (!file.exists()) {
                 File dir = new File(file.getParent());
                 dir.mkdirs();
                 file.createNewFile();
