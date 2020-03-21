@@ -238,7 +238,7 @@ public class XQueryOptimizer {
     private static String reformForWhere(Map<String, String> valueMap, Map<String, VarTreeNode> forest, Map<String, List<String>> joinPart, Map<String, String> tupleMap, String joinBias) {
         // separate join group
 //        List<List<String>> joinGroups = separateJoinGroup(joinPart);
-        JoinTreeNode joinTree = generateJoinPlan(joinPart, joinBias);
+        JoinTreeNode joinTree = generateJoinPlan(joinPart, forest, joinBias);
         StringBuilder result = new StringBuilder();
         String tuple = "tuple";
         String partResult = joinTreeRewriter(tuple, joinTree, valueMap, forest, joinPart, tupleMap);
@@ -324,16 +324,9 @@ public class XQueryOptimizer {
 
     // milestone 4
 
-    private static JoinTreeNode generateJoinPlan(Map<String, List<String>> joinInfo, String joinBias) {
+    private static JoinTreeNode generateJoinPlan(Map<String, List<String>> joinInfo, Map<String, VarTreeNode> forest, String joinBias) {
         // generate join group
-        Set<String> seen = new HashSet<>();
-        for (String key : joinInfo.keySet()) {
-            String[] tables = key.split("&");
-            seen.add(tables[0]);
-            if (tables.length == 2) { seen.add(tables[1]); }
-        }
-        List<String> joinGroup = new ArrayList<>(seen);
-
+        List<String> joinGroup = new ArrayList<>(forest.keySet());
         JoinTreeNode joinTree = null;
         if (joinBias.equals("L") || joinBias.equals("-L") ) {
             joinTree =  generateLeftJoinTree(joinInfo, joinGroup);
