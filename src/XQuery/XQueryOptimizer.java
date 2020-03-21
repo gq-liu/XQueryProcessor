@@ -352,9 +352,84 @@ public class XQueryOptimizer {
         return left;
     }
 
+    private static Set<String> getSubset(String combo, List<String> joinGroup) {
+        Set<String> res = new HashSet<>();
+        for (int i = joinGroup.size() - 1; i >= 0; i--) {
+            int ind = i - (joinGroup.size() - combo.length());
+            if (ind < 0) { break; }
+            if (combo.charAt(ind) == '1') {
+                res.add(joinGroup.get(i));
+            }
+        }
+        return res;
+    }
+
+    private static List<Set<String>> separateJoinGroup(Map<String, List<String>> joinPart) {
+        List<List<String>> joinGroups = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        List<String> joinTables = new ArrayList<>(joinPart.keySet());
+        for (int i = 0; i < joinTables.size(); i++) {
+            if (seen.contains(joinTables.get(i))) { continue; }
+            List<String> group = new ArrayList<>();
+            group.add(joinTables.get(i));
+            seen.add(joinTables.get(i));
+            String[] tables = joinTables.get(i).split("&");
+            Set<String> keys = new HashSet<>();
+            keys.add(tables[0]);
+            if (tables.length == 2) { keys.add(tables[1]); }
+            int start = i + 1;
+            for (int j = start; j < joinTables.size(); j++) {
+                if (seen.contains(joinTables.get(j))) { continue; }
+                if (shareTable(keys, joinTables.get(j))) {
+                    int keysSizePrev = keys.size();
+                    String[] tables2 = joinTables.get(j).split("&");
+                    keys.add(tables2[0]);
+                    if (tables2.length > 1) { keys.add(tables2[1]); }
+                    group.add(joinTables.get(j));
+                    seen.add(joinTables.get(j));
+                    if (keys.size() > keysSizePrev) { j = start - 1; }
+                }
+            }
+            joinGroups.add(group);
+        }
+        List<Set<String>> result = new ArrayList<>();
+        for (List<String> list : joinGroups) {
+            Set<String> set = new HashSet<>();
+            for (String key : list) {
+                String[] tables = key.split("&");
+                set.add(tables[0]);
+                if (tables.length == 2) { set.add(tables[1]); }
+            }
+            result.add(set);
+        }
+
+        return result;
+    }
+
+    private static boolean shareTable(Set<String> keys, String joinTables) {
+        String[] tables = joinTables.split("&");
+        return keys.contains(tables[0]) || (tables.length > 1 && keys.contains(tables[1]));
+    }
+
     private static JoinTreeNode generateBushyJoinTree(Map<String, List<String>> joinInfo, List<String> joinGroup) {
         // using dynamic programming to generate bushy tree
-        Map<Set<String>, JoinTreeNode> dp = new HashMap<>();
+        Map<Set<String>, Integer> map = new HashMap<>();
+        JoinTreeNode[] DP = new JoinTreeNode[(int) Math.pow(2, joinGroup.size())];
+        for (int i = 1; i <= (int) Math.pow(2, joinGroup.size()) - 1; i++) {
+            String combo = Integer.toBinaryString(i);
+            Set<String> subset = getSubset(combo, joinGroup);
+            map.put(subset, i);
+        }
+//        List<Set<String>> subSets = new ArrayList<>();
+//        getSubsets(joinGroup, subSets, new ArrayList<String>(), 0);
+//        int ind = 0;
+//        for (Set<String> s : subSets) {
+//            map.put(s, ind++);
+//        }
+        List<Set<String>> groups = separateJoinGroup(joinInfo);
+        boolean isAllConnected = groups.size() == 1 && groups.get(0).size() == joinGroup.size() ? true:false;
+
+
         // base case
         for (String table : joinGroup) {
             Set<String> joinTables = new HashSet<>();
@@ -365,7 +440,8 @@ public class XQueryOptimizer {
                 joinCond.addAll(joinInfo.get(table));
             }
             JoinTreeNode node = new JoinTreeNode(new HashSet<>(joinTables), joinCond, 1, 0);
-            dp.put(joinTables, node);
+            // dp.put(joinTables, node);
+            DP[map.get(joinTables)] = node;
         }
 
         for (int i = 2; i < (int) Math.pow(2, joinGroup.size()); i++) {
@@ -382,26 +458,46 @@ public class XQueryOptimizer {
             getSubsets(S, subsets, new ArrayList<String>(), 0);
             for (Set<String> set1 : subsets) {
                 Set<String> set2 = getRest(set1, S);
-                if (!dp.containsKey(set1) || !dp.containsKey(set2)) { continue; }
-                JoinTreeNode left = dp.get(set1);
-                JoinTreeNode right = dp.get(set2);
+                if (set1 == null || set1.size() == 0 || set2 == null || set2.size() == 0) { continue; }
+                if (DP[map.get(set1)] == null || DP[map.get(set2)] == null) { continue; }
+                JoinTreeNode left = DP[map.get(set1)];
+                JoinTreeNode right = DP[map.get(set2)];
+
+//                if (!dp.containsKey(set1) || !dp.containsKey(set2)) { continue; }
+//                JoinTreeNode left = dp.get(set1);
+//                JoinTreeNode right = dp.get(set2);
                 List<String> joinCond = new ArrayList<>();
                 boolean isConnecte = isConnected(left, right, joinInfo, joinCond);
+                if (isAllConnected && !isConnecte) { continue; }
                 // if (!isConnecte) { continue; }
                 Set<String> S_set = new HashSet<>(S);
                 int numOfCP = left.numOfCP + right.numOfCP;
                 if (!isConnecte) { numOfCP++; }
                 JoinTreeNode root = createJoinTree(left, right, S_set, joinCond, numOfCP);
-                if (!dp.containsKey(S_set)) {
-                    dp.put(S_set, root);
-                } else if (root.numOfCP < dp.get(S_set).numOfCP) {
-                    dp.put(S_set, root);
-                } else if (root.height < dp.get(S_set).height) {
-                    dp.put(S_set, root);
+                if (isAllConnected) {
+                    if (DP[map.get(S_set)] == null || root.height < DP[map.get(S_set)].height) {
+                        DP[map.get(S_set)] = root;
+                    }
+                } else {
+                    if (DP[map.get(S_set)] == null) {
+                        DP[map.get(S_set)] = root;
+                    } else if (root.numOfCP < DP[map.get(S_set)].numOfCP) {
+                        DP[map.get(S_set)] = root;
+                    } else if (root.height < DP[map.get(S_set)].height) {
+                        DP[map.get(S_set)] = root;
+                    }
                 }
+//                if (!dp.containsKey(S_set)) {
+//                    dp.put(S_set, root);
+//                } else if (root.numOfCP < dp.get(S_set).numOfCP) {
+//                    dp.put(S_set, root);
+//                } else if (root.height < dp.get(S_set).height) {
+//                    dp.put(S_set, root);
+//                }
             }
         }
-        return dp.get(new HashSet<>(joinGroup));
+        return DP[map.get(new HashSet<>(joinGroup))];
+        //return dp.get(new HashSet<>(joinGroup));
     }
 
     private static void getSubsets(List<String> S, List<Set<String>> subsets, List<String> list, int pos) {
