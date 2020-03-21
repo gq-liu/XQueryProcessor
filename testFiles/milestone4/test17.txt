@@ -30,5 +30,5 @@ return <tuple0>{
 <spec>{$spec}</spec>
 }</tuple0>,
 [speb],[spec]
-)where $tuple0/sa/*=$tuple0/sb/* and $tuple0/spa/*=$tuple0/spc/* and $tuple0/spea/*=$tuple0/sped/*
-return<result>{<title>{$tuple0/sa/*/TITLE/text()}</title>,<speaker>{$tuple0/spa/*/*}</speaker>}</result>
+)
+return <result>{<title>{$tuple0/sa/*/TITLE/text()}</title>,<speaker>{$tuple0/spa/*/*}</speaker>}</result>
